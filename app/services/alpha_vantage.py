@@ -1,7 +1,9 @@
+"""Business logic service for alpha_vantage operations."""
+
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import httpx
 
@@ -11,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class AlphaVantageClient:
+
+    """AlphaVantageClient class."""
+
     def __init__(self):
         self.base_url = settings.alpha_vantage_base_url
         self.api_key = settings.alpha_vantage_api_key

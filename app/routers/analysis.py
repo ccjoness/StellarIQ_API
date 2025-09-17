@@ -1,3 +1,5 @@
+"""API router for analysis endpoints."""
+
 import logging
 from datetime import datetime
 from typing import List, Optional
@@ -15,7 +17,6 @@ from app.schemas.analysis import (
     BulkAnalysisResponse,
     MarketAnalysisResult,
     MarketCondition,
-    MarketScreenerRequest,
     ScreenerResult,
     WatchlistAnalysis,
 )

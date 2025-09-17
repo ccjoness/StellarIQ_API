@@ -1,6 +1,8 @@
+"""Business logic service for market_analysis operations."""
+
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from app.schemas.analysis import (
     AnalysisThresholds,
@@ -17,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class MarketAnalysisService:
+
+    """MarketAnalysisService class."""
+
     def __init__(self):
         self.market_service = MarketDataService()
         self.default_thresholds = AnalysisThresholds()

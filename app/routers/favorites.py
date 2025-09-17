@@ -1,3 +1,5 @@
+"""API router for favorites endpoints."""
+
 import logging
 from typing import Optional
 
@@ -10,7 +12,6 @@ from app.models.favorite import AssetType
 from app.models.user import User
 from app.schemas.favorite import (
     FavoriteCreate,
-    FavoriteDelete,
     FavoriteResponse,
     FavoritesListResponse,
     FavoriteWithQuote,

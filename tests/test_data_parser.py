@@ -1,3 +1,5 @@
+"""Tests for data_parser.py module."""
+
 import pytest
 
 from app.utils.data_parser import DataParser

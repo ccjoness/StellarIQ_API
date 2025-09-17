@@ -1,10 +1,14 @@
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+"""Pydantic schemas for crypto data models."""
+
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
 
 class CryptoExchangeRate(BaseModel):
+
+    """CryptoExchangeRate class."""
+
     from_currency_code: str
     from_currency_name: str
     to_currency_code: str
@@ -17,6 +21,9 @@ class CryptoExchangeRate(BaseModel):
 
 
 class CryptoTimeSeriesData(BaseModel):
+
+    """CryptoTimeSeriesData class."""
+
     timestamp: str
     open_usd: float
     high_usd: float
@@ -27,6 +34,9 @@ class CryptoTimeSeriesData(BaseModel):
 
 
 class CryptoDailyResponse(BaseModel):
+
+    """CryptoDailyResponse class."""
+
     symbol: str
     market: str
     last_refreshed: str
@@ -35,11 +45,17 @@ class CryptoDailyResponse(BaseModel):
 
 
 class CryptoRateRequest(BaseModel):
+
+    """CryptoRateRequest class."""
+
     from_currency: str
     to_currency: Optional[str] = "USD"
 
 
 class CryptoDailyRequest(BaseModel):
+
+    """CryptoDailyRequest class."""
+
     symbol: str
     market: Optional[str] = "USD"
 

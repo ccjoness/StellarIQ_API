@@ -1,3 +1,5 @@
+"""Favorite model for user's favorite assets."""
+
 import enum
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
@@ -8,11 +10,15 @@ from app.core.database import Base
 
 
 class AssetType(enum.Enum):
+    """Asset type enumeration."""
+
     STOCK = "stock"
     CRYPTO = "crypto"
 
 
 class Favorite(Base):
+    """Favorite asset model."""
+
     __tablename__ = "favorites"
 
     id = Column(Integer, primary_key=True, index=True)

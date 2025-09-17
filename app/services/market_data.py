@@ -1,5 +1,7 @@
+"""Business logic service for market_data operations."""
+
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from app.core.redis import redis_client
 from app.services.alpha_vantage import AlphaVantageClient
@@ -8,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class MarketDataService:
+
+    """MarketDataService class."""
+
     def __init__(self):
         self.alpha_vantage = AlphaVantageClient()
 

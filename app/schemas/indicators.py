@@ -1,22 +1,32 @@
-from datetime import datetime
+"""Pydantic schemas for indicators data models."""
+
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 
 class MarketCondition(str, Enum):
+
+    """MarketCondition class."""
+
     OVERSOLD = "oversold"
     OVERBOUGHT = "overbought"
     NEUTRAL = "neutral"
 
 
 class RSIData(BaseModel):
+
+    """RSIData class."""
+
     timestamp: str
     rsi: float
 
 
 class RSIResponse(BaseModel):
+
+    """RSIResponse class."""
+
     symbol: str
     interval: str
     time_period: int
@@ -28,6 +38,9 @@ class RSIResponse(BaseModel):
 
 
 class MACDData(BaseModel):
+
+    """MACDData class."""
+
     timestamp: str
     macd: float
     macd_hist: float
@@ -35,6 +48,9 @@ class MACDData(BaseModel):
 
 
 class MACDResponse(BaseModel):
+
+    """MACDResponse class."""
+
     symbol: str
     interval: str
     series_type: str
@@ -45,12 +61,18 @@ class MACDResponse(BaseModel):
 
 
 class StochData(BaseModel):
+
+    """StochData class."""
+
     timestamp: str
     slowk: float
     slowd: float
 
 
 class StochResponse(BaseModel):
+
+    """StochResponse class."""
+
     symbol: str
     interval: str
     last_refreshed: str
@@ -60,6 +82,9 @@ class StochResponse(BaseModel):
 
 
 class BollingerBandsData(BaseModel):
+
+    """BollingerBandsData class."""
+
     timestamp: str
     real_upper_band: float
     real_middle_band: float
@@ -67,6 +92,9 @@ class BollingerBandsData(BaseModel):
 
 
 class BollingerBandsResponse(BaseModel):
+
+    """BollingerBandsResponse class."""
+
     symbol: str
     interval: str
     time_period: int
@@ -78,6 +106,9 @@ class BollingerBandsResponse(BaseModel):
 
 
 class TechnicalAnalysisSummary(BaseModel):
+
+    """TechnicalAnalysisSummary class."""
+
     symbol: str
     rsi_condition: Optional[MarketCondition] = None
     macd_condition: Optional[MarketCondition] = None
@@ -89,6 +120,9 @@ class TechnicalAnalysisSummary(BaseModel):
 
 
 class IndicatorRequest(BaseModel):
+
+    """IndicatorRequest class."""
+
     symbol: str
     interval: Optional[str] = "daily"
     time_period: Optional[int] = None

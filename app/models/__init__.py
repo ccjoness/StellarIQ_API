@@ -1,3 +1,5 @@
+"""Database models package."""
+
 from .cache import CacheEntry
 from .favorite import AssetType, Favorite
 from .user import User

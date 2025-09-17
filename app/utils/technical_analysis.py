@@ -1,3 +1,5 @@
+"""Utility functions for technical_analysis operations."""
+
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -7,13 +9,15 @@ from app.schemas.indicators import (
     MarketCondition,
     RSIData,
     StochData,
-    TechnicalAnalysisSummary,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class TechnicalAnalyzer:
+
+    """TechnicalAnalyzer class."""
+
     @staticmethod
     def parse_rsi_data(data: Dict[str, Any]) -> List[RSIData]:
         """Parse RSI indicator data."""

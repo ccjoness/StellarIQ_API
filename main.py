@@ -1,3 +1,5 @@
+"""FastAPI application for StellarIQ backend."""
+
 import logging
 
 import uvicorn
@@ -12,7 +14,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Backend API for StellarIQ mobile app - Stock and Cryptocurrency data with technical analysis",
+    description=(
+        "Backend API for StellarIQ mobile app - "
+        "Stock and Cryptocurrency data with technical analysis"
+    ),
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -37,7 +42,8 @@ app.include_router(analysis.router)
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
+    """Root endpoint returning API information."""
     return {
         "message": "StellarIQ Backend API",
         "version": settings.app_version,
@@ -46,7 +52,8 @@ async def root():
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
+    """Health check endpoint."""
     return {"status": "healthy"}
 
 

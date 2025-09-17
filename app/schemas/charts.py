@@ -1,10 +1,14 @@
-from datetime import datetime
+"""Pydantic schemas for charts data models."""
+
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
 
 class CandlestickData(BaseModel):
+
+    """CandlestickData class."""
+
     timestamp: str
     open: float
     high: float
@@ -14,11 +18,17 @@ class CandlestickData(BaseModel):
 
 
 class LineChartData(BaseModel):
+
+    """LineChartData class."""
+
     timestamp: str
     value: float
 
 
 class TechnicalIndicatorOverlay(BaseModel):
+
+    """TechnicalIndicatorOverlay class."""
+
     rsi: Optional[List[LineChartData]] = None
     macd: Optional[List[LineChartData]] = None
     macd_signal: Optional[List[LineChartData]] = None
@@ -31,6 +41,9 @@ class TechnicalIndicatorOverlay(BaseModel):
 
 
 class ChartDataResponse(BaseModel):
+
+    """ChartDataResponse class."""
+
     symbol: str
     interval: str
     last_refreshed: str
@@ -41,6 +54,9 @@ class ChartDataResponse(BaseModel):
 
 
 class ChartRequest(BaseModel):
+
+    """ChartRequest class."""
+
     symbol: str
     interval: Optional[
         str
@@ -55,16 +71,25 @@ class ChartRequest(BaseModel):
 
 
 class MultiSymbolChartData(BaseModel):
+
+    """MultiSymbolChartData class."""
+
     symbols: List[str]
     chart_data: Dict[str, ChartDataResponse]
 
 
 class PriceComparisonData(BaseModel):
+
+    """PriceComparisonData class."""
+
     timestamp: str
     prices: Dict[str, float]  # symbol -> price
 
 
 class ComparisonChartResponse(BaseModel):
+
+    """ComparisonChartResponse class."""
+
     symbols: List[str]
     interval: str
     data: List[PriceComparisonData]

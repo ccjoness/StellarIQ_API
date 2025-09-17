@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
@@ -64,4 +64,8 @@ class CryptoPortfolio(Base):
     __table_args__ = (UniqueConstraint("user_id", "symbol", name="_user_symbol_uc"),)
 
     def __repr__(self) -> str:
-        return f"<CryptoPortfolio(user_id={self.user_id}, symbol='{self.symbol}', amount={self.amount})>"
+        """String representation of CryptoPortfolio."""
+        return (
+            f"<CryptoPortfolio(user_id={self.user_id}, "
+            f"symbol='{self.symbol}', amount={self.amount})>"
+        )

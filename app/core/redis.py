@@ -1,3 +1,5 @@
+"""Core redis functionality."""
+
 import json
 import logging
 from typing import Any, Optional
@@ -10,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class RedisClient:
+
+    """RedisClient class."""
+
     def __init__(self):
         self.redis_url = settings.redis_url
         self.ttl = settings.cache_ttl_seconds

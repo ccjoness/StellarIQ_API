@@ -1,3 +1,5 @@
+"""API router for stocks endpoints."""
+
 import logging
 from typing import Optional
 
@@ -10,7 +12,6 @@ from app.schemas.stock import (
     StockIntradayResponse,
     StockQuote,
     StockSearchResponse,
-    StockSearchResult,
 )
 from app.services.market_data import MarketDataService
 from app.utils.data_parser import DataParser

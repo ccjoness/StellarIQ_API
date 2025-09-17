@@ -1,3 +1,5 @@
+"""Utility functions for chart_formatter operations."""
+
 import logging
 from typing import Any, Dict, List, Optional, Union
 
@@ -15,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class ChartFormatter:
+
+    """ChartFormatter class."""
+
     @staticmethod
     def format_candlestick_data(
         time_series_data: Union[List[TimeSeriesData], List[CryptoTimeSeriesData]]

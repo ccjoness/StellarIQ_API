@@ -1,3 +1,5 @@
+"""Utility functions for data_parser operations."""
+
 import logging
 from typing import Any, Dict, List
 
@@ -8,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class DataParser:
+
+    """DataParser class."""
+
     @staticmethod
     def parse_stock_quote(data: Dict[str, Any]) -> StockQuote:
         """Parse Alpha Vantage global quote response."""

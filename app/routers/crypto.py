@@ -1,5 +1,7 @@
+"""API router for crypto endpoints."""
+
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -11,7 +13,6 @@ from app.schemas.crypto import (
     CRYPTO_CATEGORIES,
     POPULAR_CRYPTOS,
     CryptoDailyResponse,
-    CryptoExchangeRate,
     CryptoOverview,
     CryptoPortfolioCreate,
     CryptoPortfolioResponse,

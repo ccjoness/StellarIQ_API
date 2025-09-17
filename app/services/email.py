@@ -6,7 +6,6 @@ import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
 
 from config import settings
 
@@ -33,21 +32,23 @@ class EmailService:
             reset_url = f"http://localhost:3000/reset-password?token={reset_token}"
 
             subject = "StellarIQ - Password Reset Request"
-            body = f"""
-Hello,
-
-You have requested to reset your password for your StellarIQ account.
-
-Please click the link below to reset your password:
-{reset_url}
-
-This link will expire in 1 hour.
-
-If you did not request this password reset, please ignore this email.
-
-Best regards,
-The StellarIQ Team
-            """
+            # For development, we just log the reset URL
+            # In production, you would construct and send an email body like:
+            # body = f"""
+            # Hello,
+            #
+            # You have requested to reset your password for your StellarIQ account.
+            #
+            # Please click the link below to reset your password:
+            # {reset_url}
+            #
+            # This link will expire in 1 hour.
+            #
+            # If you did not request this password reset, please ignore this email.
+            #
+            # Best regards,
+            # The StellarIQ Team
+            # """
 
             # For development, just log the email content
             logger.info(f"Password reset email for {to_email}:")

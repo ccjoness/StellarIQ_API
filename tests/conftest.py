@@ -1,3 +1,5 @@
+"""Conftest module."""
+
 import asyncio
 from typing import Generator
 

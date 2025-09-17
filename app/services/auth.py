@@ -1,3 +1,5 @@
+"""Business logic service for auth operations."""
+
 import logging
 from datetime import datetime, timezone
 from typing import Optional
@@ -22,6 +24,9 @@ logger = logging.getLogger(__name__)
 
 
 class AuthService:
+
+    """AuthService class."""
+
     def __init__(self, db: Session):
         self.db = db
 

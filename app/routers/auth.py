@@ -1,3 +1,5 @@
+"""API router for auth endpoints."""
+
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status

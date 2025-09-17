@@ -1,10 +1,14 @@
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+"""Pydantic schemas for stock data models."""
+
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 
 class StockQuote(BaseModel):
+
+    """StockQuote class."""
+
     symbol: str
     open: float
     high: float
@@ -18,6 +22,9 @@ class StockQuote(BaseModel):
 
 
 class StockSearchResult(BaseModel):
+
+    """StockSearchResult class."""
+
     symbol: str
     name: str
     type: str
@@ -30,10 +37,16 @@ class StockSearchResult(BaseModel):
 
 
 class StockSearchResponse(BaseModel):
+
+    """StockSearchResponse class."""
+
     results: List[StockSearchResult]
 
 
 class TimeSeriesData(BaseModel):
+
+    """TimeSeriesData class."""
+
     timestamp: str
     open: float
     high: float
@@ -43,6 +56,9 @@ class TimeSeriesData(BaseModel):
 
 
 class StockDailyResponse(BaseModel):
+
+    """StockDailyResponse class."""
+
     symbol: str
     last_refreshed: str
     time_zone: str
@@ -50,6 +66,9 @@ class StockDailyResponse(BaseModel):
 
 
 class StockIntradayResponse(BaseModel):
+
+    """StockIntradayResponse class."""
+
     symbol: str
     last_refreshed: str
     interval: str
@@ -58,14 +77,23 @@ class StockIntradayResponse(BaseModel):
 
 
 class StockHistoryRequest(BaseModel):
+
+    """StockHistoryRequest class."""
+
     symbol: str
     interval: Optional[str] = "daily"  # daily, weekly, monthly, or intraday intervals
     outputsize: Optional[str] = "compact"  # compact or full
 
 
 class StockQuoteRequest(BaseModel):
+
+    """StockQuoteRequest class."""
+
     symbol: str
 
 
 class StockSearchRequest(BaseModel):
+
+    """StockSearchRequest class."""
+
     keywords: str

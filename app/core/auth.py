@@ -1,4 +1,5 @@
-from typing import Optional
+"""Core auth functionality."""
+
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer

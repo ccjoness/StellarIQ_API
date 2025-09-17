@@ -3,7 +3,7 @@ Crypto portfolio service for managing user cryptocurrency holdings
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session

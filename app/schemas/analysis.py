@@ -1,6 +1,7 @@
+"""Pydantic schemas for analysis data models."""
+
 from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -8,6 +9,9 @@ from app.schemas.indicators import MarketCondition
 
 
 class AnalysisThresholds(BaseModel):
+
+    """AnalysisThresholds class."""
+
     rsi_overbought: float = 70.0
     rsi_oversold: float = 30.0
     stoch_overbought: float = 80.0
@@ -16,6 +20,9 @@ class AnalysisThresholds(BaseModel):
 
 
 class IndicatorSignal(BaseModel):
+
+    """IndicatorSignal class."""
+
     indicator: str
     condition: MarketCondition
     value: float
@@ -24,6 +31,9 @@ class IndicatorSignal(BaseModel):
 
 
 class MarketAnalysisResult(BaseModel):
+
+    """MarketAnalysisResult class."""
+
     symbol: str
     asset_type: str
     analysis_timestamp: datetime
@@ -37,18 +47,27 @@ class MarketAnalysisResult(BaseModel):
 
 
 class BulkAnalysisRequest(BaseModel):
+
+    """BulkAnalysisRequest class."""
+
     symbols: List[str]
     asset_type: str = "stock"  # "stock" or "crypto"
     thresholds: Optional[AnalysisThresholds] = None
 
 
 class BulkAnalysisResponse(BaseModel):
+
+    """BulkAnalysisResponse class."""
+
     results: List[MarketAnalysisResult]
     summary: Dict[str, int]  # Count of overbought, oversold, neutral
     analysis_timestamp: datetime
 
 
 class WatchlistAnalysis(BaseModel):
+
+    """WatchlistAnalysis class."""
+
     user_id: int
     total_favorites: int
     overbought_count: int
@@ -59,6 +78,9 @@ class WatchlistAnalysis(BaseModel):
 
 
 class MarketScreenerRequest(BaseModel):
+
+    """MarketScreenerRequest class."""
+
     condition: MarketCondition
     min_confidence: Optional[float] = 0.6
     asset_type: Optional[str] = "stock"
@@ -66,6 +88,9 @@ class MarketScreenerRequest(BaseModel):
 
 
 class ScreenerResult(BaseModel):
+
+    """ScreenerResult class."""
+
     symbol: str
     name: Optional[str] = None
     condition: MarketCondition

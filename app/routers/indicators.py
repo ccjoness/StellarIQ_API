@@ -1,3 +1,5 @@
+"""API router for indicators endpoints."""
+
 import logging
 from typing import Optional
 

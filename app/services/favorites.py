@@ -1,12 +1,13 @@
+"""Business logic service for favorites operations."""
+
 import logging
-from typing import List, Optional
+from typing import List
 
 from fastapi import HTTPException, status
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app.models.favorite import AssetType, Favorite
-from app.models.user import User
 from app.schemas.favorite import FavoriteCreate, FavoriteWithQuote
 from app.services.market_data import MarketDataService
 from app.utils.data_parser import DataParser
@@ -15,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class FavoritesService:
+
+    """FavoritesService class."""
+
     def __init__(self, db: Session):
         self.db = db
         self.market_service = MarketDataService()

@@ -1,5 +1,6 @@
+"""Configuration settings for StellarIQ API."""
+
 import os
-from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
@@ -8,6 +9,8 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
+    """Application settings configuration."""
+
     # Database
     database_url: str = os.getenv(
         "DATABASE_URL", "postgresql://stellariq:password@localhost:5432/stellariq_db"
@@ -41,6 +44,8 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = int(os.getenv("CACHE_TTL_SECONDS", "900"))  # 15 minutes
 
     class Config:
+        """Pydantic configuration."""
+
         env_file = ".env"
         extra = "allow"  # Allow extra fields
 
