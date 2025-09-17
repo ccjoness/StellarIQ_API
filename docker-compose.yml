@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: stellariq_db
+      POSTGRES_USER: stellariq
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stellariq -d stellariq_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  app:
+    build: .
+    container_name: stellariq_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://stellariq:password@postgres:5432/stellariq_db
+      - REDIS_URL=redis://redis:6379/0
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - CACHE_TTL_SECONDS=900
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        poetry run alembic upgrade head &&
+        poetry run uvicorn main:app --host 0.0.0.0 --port 8000
+      "
+
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: stellariq_api_dev
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://stellariq:password@postgres:5432/stellariq_db
+      - REDIS_URL=redis://redis:6379/0
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - CACHE_TTL_SECONDS=900
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/.venv  # Exclude virtual environment from volume mount
+    command: >
+      sh -c "
+        poetry run alembic upgrade head &&
+        poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  redis_data:
