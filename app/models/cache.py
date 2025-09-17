@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Index
+from sqlalchemy import Column, DateTime, Index, Integer, String, Text
 from sqlalchemy.sql import func
+
 from app.core.database import Base
+
 
 class CacheEntry(Base):
     __tablename__ = "cache_entries"
@@ -12,6 +14,4 @@ class CacheEntry(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Index for efficient cleanup of expired entries
-    __table_args__ = (
-        Index('idx_cache_expires_at', 'expires_at'),
-    )
+    __table_args__ = (Index("idx_cache_expires_at", "expires_at"),)

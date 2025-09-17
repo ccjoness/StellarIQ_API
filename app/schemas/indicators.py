@@ -1,16 +1,20 @@
-from pydantic import BaseModel
-from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
+
 
 class MarketCondition(str, Enum):
     OVERSOLD = "oversold"
     OVERBOUGHT = "overbought"
     NEUTRAL = "neutral"
 
+
 class RSIData(BaseModel):
     timestamp: str
     rsi: float
+
 
 class RSIResponse(BaseModel):
     symbol: str
@@ -22,11 +26,13 @@ class RSIResponse(BaseModel):
     current_condition: MarketCondition
     analysis: str
 
+
 class MACDData(BaseModel):
     timestamp: str
     macd: float
     macd_hist: float
     macd_signal: float
+
 
 class MACDResponse(BaseModel):
     symbol: str
@@ -37,10 +43,12 @@ class MACDResponse(BaseModel):
     current_condition: MarketCondition
     analysis: str
 
+
 class StochData(BaseModel):
     timestamp: str
     slowk: float
     slowd: float
+
 
 class StochResponse(BaseModel):
     symbol: str
@@ -50,11 +58,13 @@ class StochResponse(BaseModel):
     current_condition: MarketCondition
     analysis: str
 
+
 class BollingerBandsData(BaseModel):
     timestamp: str
     real_upper_band: float
     real_middle_band: float
     real_lower_band: float
+
 
 class BollingerBandsResponse(BaseModel):
     symbol: str
@@ -66,6 +76,7 @@ class BollingerBandsResponse(BaseModel):
     current_condition: MarketCondition
     analysis: str
 
+
 class TechnicalAnalysisSummary(BaseModel):
     symbol: str
     rsi_condition: Optional[MarketCondition] = None
@@ -75,6 +86,7 @@ class TechnicalAnalysisSummary(BaseModel):
     overall_condition: MarketCondition
     confidence_score: float  # 0-1 scale
     recommendation: str
+
 
 class IndicatorRequest(BaseModel):
     symbol: str

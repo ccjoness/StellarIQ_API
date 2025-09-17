@@ -1,5 +1,5 @@
-from .user import User
-from .favorite import Favorite, AssetType
 from .cache import CacheEntry
+from .favorite import AssetType, Favorite
+from .user import User
 
 __all__ = ["User", "Favorite", "AssetType", "CacheEntry"]

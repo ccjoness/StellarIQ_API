@@ -1,22 +1,25 @@
-from sqlalchemy.orm import Session
+import logging
+from datetime import datetime, timezone
+from typing import Optional
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.security import (
+    create_access_token,
+    create_password_reset_token,
+    create_refresh_token,
+    get_password_hash,
+    get_password_reset_expire_time,
+    get_refresh_token_expire_time,
+    verify_password,
+)
 from app.models.user import User
 from app.schemas.user import UserCreate
-from app.core.security import (
-    get_password_hash,
-    verify_password,
-    create_access_token,
-    create_refresh_token,
-    get_refresh_token_expire_time,
-    create_password_reset_token,
-    get_password_reset_expire_time
-)
-from typing import Optional
-from datetime import datetime, timezone
-import logging
 from app.services.email import email_service
 
 logger = logging.getLogger(__name__)
+
 
 class AuthService:
     def __init__(self, db: Session):
@@ -40,13 +43,12 @@ class AuthService:
         if self.get_user_by_email(user_data.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Email already registered",
             )
-        
+
         if self.get_user_by_username(user_data.username):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already taken"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken"
             )
 
         # Create new user
@@ -54,9 +56,9 @@ class AuthService:
         db_user = User(
             email=user_data.email,
             username=user_data.username,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
         )
-        
+
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
@@ -83,8 +85,7 @@ class AuthService:
 
         if not user.is_active:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Inactive user"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
             )
 
         # Create tokens
@@ -101,7 +102,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "expires_in": 30 * 60,  # 30 minutes in seconds
-            "user": user
+            "user": user,
         }
 
     def refresh_access_token(self, refresh_token: str) -> dict:
@@ -115,25 +116,25 @@ class AuthService:
         if not user:
             logger.error("No user found with this refresh token")
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
             )
 
         # Check if refresh token is expired
-        if user.refresh_token_expires_at is None or user.refresh_token_expires_at < datetime.now(timezone.utc):
+        if (
+            user.refresh_token_expires_at is None
+            or user.refresh_token_expires_at < datetime.now(timezone.utc)
+        ):
             # Clear expired refresh token
             user.refresh_token = None
             user.refresh_token_expires_at = None
             self.db.commit()
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Refresh token expired"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired"
             )
 
         if not user.is_active:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Inactive user"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
             )
 
         # Create new access token
@@ -185,7 +186,9 @@ class AuthService:
             self.db.commit()
 
             # Send password reset email
-            email_sent = email_service.send_password_reset_email(user.email, reset_token)
+            email_sent = email_service.send_password_reset_email(
+                user.email, reset_token
+            )
             if not email_sent:
                 logger.error(f"Failed to send password reset email to {user.email}")
                 # Don't fail the request if email fails, user can try again
@@ -209,12 +212,14 @@ class AuthService:
             logger.warning("Invalid password reset token used")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid or expired reset token"
+                detail="Invalid or expired reset token",
             )
 
         # Check if token is expired
-        if (user.password_reset_expires_at is None or
-            user.password_reset_expires_at < datetime.now(timezone.utc)):
+        if (
+            user.password_reset_expires_at is None
+            or user.password_reset_expires_at < datetime.now(timezone.utc)
+        ):
             # Clear expired token
             user.password_reset_token = None
             user.password_reset_expires_at = None
@@ -223,14 +228,13 @@ class AuthService:
             logger.warning(f"Expired password reset token used for user {user.id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid or expired reset token"
+                detail="Invalid or expired reset token",
             )
 
         if not user.is_active:
             logger.warning(f"Password reset attempted for inactive user {user.id}")
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Account is not active"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Account is not active"
             )
 
         try:
@@ -253,5 +257,5 @@ class AuthService:
             self.db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to reset password"
+                detail="Failed to reset password",
             )

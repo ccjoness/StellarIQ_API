@@ -3,9 +3,9 @@
 Script to check if the development environment is properly set up.
 """
 
-import sys
-import subprocess
 import importlib
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -16,7 +16,9 @@ def check_python_version():
         print(f"✅ Python {version.major}.{version.minor}.{version.micro}")
         return True
     else:
-        print(f"❌ Python {version.major}.{version.minor}.{version.micro} (requires 3.11+)")
+        print(
+            f"❌ Python {version.major}.{version.minor}.{version.micro} (requires 3.11+)"
+        )
         return False
 
 
@@ -46,7 +48,7 @@ def check_dependencies():
         "pydantic",
         "alembic",
     ]
-    
+
     missing = []
     for dep in dependencies:
         try:
@@ -55,7 +57,7 @@ def check_dependencies():
         except ImportError:
             print(f"❌ {dep}")
             missing.append(dep)
-    
+
     return len(missing) == 0
 
 
@@ -76,9 +78,11 @@ def check_docker():
         result = subprocess.run(["docker", "--version"], capture_output=True, text=True)
         if result.returncode == 0:
             print(f"✅ {result.stdout.strip()}")
-            
+
             # Check docker-compose
-            result = subprocess.run(["docker-compose", "--version"], capture_output=True, text=True)
+            result = subprocess.run(
+                ["docker-compose", "--version"], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 print(f"✅ {result.stdout.strip()}")
                 return True
@@ -96,7 +100,7 @@ def check_docker():
 def main():
     """Run all checks"""
     print("🔍 Checking StellarIQ Backend development environment...\n")
-    
+
     checks = [
         ("Python Version", check_python_version),
         ("Poetry", check_poetry),
@@ -104,14 +108,14 @@ def main():
         ("Environment File", check_env_file),
         ("Docker", check_docker),
     ]
-    
+
     results = []
     for name, check_func in checks:
         print(f"\n{name}:")
         results.append(check_func())
-    
-    print("\n" + "="*50)
-    
+
+    print("\n" + "=" * 50)
+
     if all(results):
         print("🎉 All checks passed! Your development environment is ready.")
         print("\nNext steps:")

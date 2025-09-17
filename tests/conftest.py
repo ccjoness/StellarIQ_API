@@ -1,9 +1,11 @@
-import pytest
 import asyncio
 from typing import Generator
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from app.core.database import Base, get_db
 from main import app
 
@@ -12,12 +14,12 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 # Create test engine
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
 # Create test session
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 def override_get_db():
     """Override database dependency for testing."""
@@ -27,8 +29,10 @@ def override_get_db():
     finally:
         db.close()
 
+
 # Override the dependency
 app.dependency_overrides[get_db] = override_get_db
+
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -36,6 +40,7 @@ def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
 
 @pytest.fixture
 def db_session():
@@ -48,6 +53,7 @@ def db_session():
         session.close()
         Base.metadata.drop_all(bind=engine)
 
+
 @pytest.fixture
 def client() -> Generator:
     """Create a test client."""
@@ -55,6 +61,7 @@ def client() -> Generator:
     with TestClient(app) as c:
         yield c
     Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture
 def authenticated_client(client):
@@ -65,25 +72,22 @@ def authenticated_client(client):
         json={
             "email": "test@example.com",
             "username": "testuser",
-            "password": "testpassword123"
-        }
+            "password": "testpassword123",
+        },
     )
-    
+
     # Login to get token
     login_response = client.post(
-        "/auth/login",
-        json={
-            "email": "test@example.com",
-            "password": "testpassword123"
-        }
+        "/auth/login", json={"email": "test@example.com", "password": "testpassword123"}
     )
-    
+
     token = login_response.json()["access_token"]
-    
+
     # Add authorization header to client
     client.headers.update({"Authorization": f"Bearer {token}"})
-    
+
     return client
+
 
 # Sample data for testing
 @pytest.fixture
@@ -100,9 +104,10 @@ def sample_stock_quote():
             "07. latest trading day": "2023-12-01",
             "08. previous close": "151.00",
             "09. change": "1.50",
-            "10. change percent": "0.99%"
+            "10. change percent": "0.99%",
         }
     }
+
 
 @pytest.fixture
 def sample_time_series():
@@ -113,7 +118,7 @@ def sample_time_series():
             "2. Symbol": "AAPL",
             "3. Last Refreshed": "2023-12-01",
             "4. Output Size": "Compact",
-            "5. Time Zone": "US/Eastern"
+            "5. Time Zone": "US/Eastern",
         },
         "Time Series (Daily)": {
             "2023-12-01": {
@@ -121,17 +126,18 @@ def sample_time_series():
                 "2. high": "155.00",
                 "3. low": "149.00",
                 "4. close": "152.50",
-                "5. volume": "1000000"
+                "5. volume": "1000000",
             },
             "2023-11-30": {
                 "1. open": "148.00",
                 "2. high": "151.00",
                 "3. low": "147.00",
                 "4. close": "150.00",
-                "5. volume": "900000"
-            }
-        }
+                "5. volume": "900000",
+            },
+        },
     }
+
 
 @pytest.fixture
 def sample_rsi_data():
@@ -144,14 +150,10 @@ def sample_rsi_data():
             "4: Interval": "daily",
             "5: Time Period": 14,
             "6: Series Type": "close",
-            "7: Time Zone": "US/Eastern"
+            "7: Time Zone": "US/Eastern",
         },
         "Technical Analysis: RSI": {
-            "2023-12-01": {
-                "RSI": "65.5000"
-            },
-            "2023-11-30": {
-                "RSI": "62.3000"
-            }
-        }
+            "2023-12-01": {"RSI": "65.5000"},
+            "2023-11-30": {"RSI": "62.3000"},
+        },
     }

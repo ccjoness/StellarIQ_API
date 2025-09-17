@@ -1,10 +1,13 @@
-import redis.asyncio as redis
 import json
-from typing import Any, Optional
-from config import settings
 import logging
+from typing import Any, Optional
+
+import redis.asyncio as redis
+
+from config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class RedisClient:
     def __init__(self):
@@ -81,31 +84,68 @@ class RedisClient:
         return self._generate_cache_key("stock_quote", symbol=symbol)
 
     def stock_daily_key(self, symbol: str, outputsize: str = "compact") -> str:
-        return self._generate_cache_key("stock_daily", symbol=symbol, outputsize=outputsize)
+        return self._generate_cache_key(
+            "stock_daily", symbol=symbol, outputsize=outputsize
+        )
 
-    def stock_intraday_key(self, symbol: str, interval: str = "5min", outputsize: str = "compact") -> str:
-        return self._generate_cache_key("stock_intraday", symbol=symbol, interval=interval, outputsize=outputsize)
+    def stock_intraday_key(
+        self, symbol: str, interval: str = "5min", outputsize: str = "compact"
+    ) -> str:
+        return self._generate_cache_key(
+            "stock_intraday", symbol=symbol, interval=interval, outputsize=outputsize
+        )
 
     def crypto_daily_key(self, symbol: str, market: str = "USD") -> str:
         return self._generate_cache_key("crypto_daily", symbol=symbol, market=market)
 
     def crypto_rate_key(self, from_currency: str, to_currency: str = "USD") -> str:
-        return self._generate_cache_key("crypto_rate", from_currency=from_currency, to_currency=to_currency)
+        return self._generate_cache_key(
+            "crypto_rate", from_currency=from_currency, to_currency=to_currency
+        )
 
-    def rsi_key(self, symbol: str, interval: str = "daily", time_period: int = 14, series_type: str = "close") -> str:
-        return self._generate_cache_key("rsi", symbol=symbol, interval=interval, time_period=time_period, series_type=series_type)
+    def rsi_key(
+        self,
+        symbol: str,
+        interval: str = "daily",
+        time_period: int = 14,
+        series_type: str = "close",
+    ) -> str:
+        return self._generate_cache_key(
+            "rsi",
+            symbol=symbol,
+            interval=interval,
+            time_period=time_period,
+            series_type=series_type,
+        )
 
-    def macd_key(self, symbol: str, interval: str = "daily", series_type: str = "close") -> str:
-        return self._generate_cache_key("macd", symbol=symbol, interval=interval, series_type=series_type)
+    def macd_key(
+        self, symbol: str, interval: str = "daily", series_type: str = "close"
+    ) -> str:
+        return self._generate_cache_key(
+            "macd", symbol=symbol, interval=interval, series_type=series_type
+        )
 
     def stoch_key(self, symbol: str, interval: str = "daily") -> str:
         return self._generate_cache_key("stoch", symbol=symbol, interval=interval)
 
-    def bbands_key(self, symbol: str, interval: str = "daily", time_period: int = 20, series_type: str = "close") -> str:
-        return self._generate_cache_key("bbands", symbol=symbol, interval=interval, time_period=time_period, series_type=series_type)
+    def bbands_key(
+        self,
+        symbol: str,
+        interval: str = "daily",
+        time_period: int = 20,
+        series_type: str = "close",
+    ) -> str:
+        return self._generate_cache_key(
+            "bbands",
+            symbol=symbol,
+            interval=interval,
+            time_period=time_period,
+            series_type=series_type,
+        )
 
     def search_key(self, keywords: str) -> str:
         return self._generate_cache_key("search", keywords=keywords)
+
 
 # Global Redis client instance
 redis_client = RedisClient()

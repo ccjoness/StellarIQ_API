@@ -1,15 +1,18 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
+import logging
+from typing import List, Optional
+
 from fastapi import HTTPException, status
-from app.models.favorite import Favorite, AssetType
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from app.models.favorite import AssetType, Favorite
 from app.models.user import User
 from app.schemas.favorite import FavoriteCreate, FavoriteWithQuote
 from app.services.market_data import MarketDataService
 from app.utils.data_parser import DataParser
-from typing import List, Optional
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class FavoritesService:
     def __init__(self, db: Session):
@@ -19,28 +22,32 @@ class FavoritesService:
     def add_favorite(self, user_id: int, favorite_data: FavoriteCreate) -> Favorite:
         """Add a symbol to user's favorites."""
         # Check if already exists
-        existing = self.db.query(Favorite).filter(
-            and_(
-                Favorite.user_id == user_id,
-                Favorite.symbol == favorite_data.symbol.upper(),
-                Favorite.asset_type == favorite_data.asset_type
+        existing = (
+            self.db.query(Favorite)
+            .filter(
+                and_(
+                    Favorite.user_id == user_id,
+                    Favorite.symbol == favorite_data.symbol.upper(),
+                    Favorite.asset_type == favorite_data.asset_type,
+                )
             )
-        ).first()
-        
+            .first()
+        )
+
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"{favorite_data.symbol} is already in your favorites"
+                detail=f"{favorite_data.symbol} is already in your favorites",
             )
-        
+
         # Create new favorite
         db_favorite = Favorite(
             user_id=user_id,
             symbol=favorite_data.symbol.upper(),
             asset_type=favorite_data.asset_type,
-            name=favorite_data.name
+            name=favorite_data.name,
         )
-        
+
         self.db.add(db_favorite)
         self.db.commit()
         self.db.refresh(db_favorite)
@@ -48,20 +55,24 @@ class FavoritesService:
 
     def remove_favorite(self, user_id: int, symbol: str, asset_type: AssetType) -> bool:
         """Remove a symbol from user's favorites."""
-        favorite = self.db.query(Favorite).filter(
-            and_(
-                Favorite.user_id == user_id,
-                Favorite.symbol == symbol.upper(),
-                Favorite.asset_type == asset_type
+        favorite = (
+            self.db.query(Favorite)
+            .filter(
+                and_(
+                    Favorite.user_id == user_id,
+                    Favorite.symbol == symbol.upper(),
+                    Favorite.asset_type == asset_type,
+                )
             )
-        ).first()
-        
+            .first()
+        )
+
         if not favorite:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{symbol} not found in your favorites"
+                detail=f"{symbol} not found in your favorites",
             )
-        
+
         self.db.delete(favorite)
         self.db.commit()
         return True
@@ -74,64 +85,75 @@ class FavoritesService:
         """Get user favorites with current market data."""
         favorites = self.get_user_favorites(user_id)
         favorites_with_quotes = []
-        
+
         for favorite in favorites:
             favorite_with_quote = FavoriteWithQuote(
                 id=favorite.id,
                 symbol=favorite.symbol,
                 asset_type=favorite.asset_type,
                 name=favorite.name,
-                created_at=favorite.created_at
+                created_at=favorite.created_at,
             )
-            
+
             try:
                 if favorite.asset_type == AssetType.STOCK:
                     # Get stock quote
-                    quote_data = await self.market_service.get_stock_quote(favorite.symbol)
+                    quote_data = await self.market_service.get_stock_quote(
+                        favorite.symbol
+                    )
                     quote = DataParser.parse_stock_quote(quote_data)
-                    
+
                     favorite_with_quote.current_price = quote.price
                     favorite_with_quote.change = quote.change
                     favorite_with_quote.change_percent = quote.change_percent
                     favorite_with_quote.last_updated = quote.latest_trading_day
-                    
+
                 elif favorite.asset_type == AssetType.CRYPTO:
                     # Get crypto exchange rate
-                    rate_data = await self.market_service.get_crypto_exchange_rate(favorite.symbol, "USD")
+                    rate_data = await self.market_service.get_crypto_exchange_rate(
+                        favorite.symbol, "USD"
+                    )
                     rate = DataParser.parse_crypto_exchange_rate(rate_data)
-                    
+
                     favorite_with_quote.current_price = rate.exchange_rate
                     favorite_with_quote.last_updated = rate.last_refreshed
                     # Note: Crypto exchange rate doesn't provide change data directly
-                    
+
             except Exception as e:
                 logger.warning(f"Failed to get quote for {favorite.symbol}: {e}")
                 # Continue without quote data
-            
+
             favorites_with_quotes.append(favorite_with_quote)
-        
+
         return favorites_with_quotes
 
     def is_favorite(self, user_id: int, symbol: str, asset_type: AssetType) -> bool:
         """Check if a symbol is in user's favorites."""
-        favorite = self.db.query(Favorite).filter(
-            and_(
-                Favorite.user_id == user_id,
-                Favorite.symbol == symbol.upper(),
-                Favorite.asset_type == asset_type
+        favorite = (
+            self.db.query(Favorite)
+            .filter(
+                and_(
+                    Favorite.user_id == user_id,
+                    Favorite.symbol == symbol.upper(),
+                    Favorite.asset_type == asset_type,
+                )
             )
-        ).first()
-        
+            .first()
+        )
+
         return favorite is not None
 
-    def get_favorites_by_type(self, user_id: int, asset_type: AssetType) -> List[Favorite]:
+    def get_favorites_by_type(
+        self, user_id: int, asset_type: AssetType
+    ) -> List[Favorite]:
         """Get user favorites filtered by asset type."""
-        return self.db.query(Favorite).filter(
-            and_(
-                Favorite.user_id == user_id,
-                Favorite.asset_type == asset_type
+        return (
+            self.db.query(Favorite)
+            .filter(
+                and_(Favorite.user_id == user_id, Favorite.asset_type == asset_type)
             )
-        ).all()
+            .all()
+        )
 
     def get_favorite_count(self, user_id: int) -> int:
         """Get total count of user's favorites."""

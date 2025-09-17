@@ -1,9 +1,11 @@
+import logging
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.routers import analysis, auth, charts, crypto, favorites, indicators, stocks
 from config import settings
-from app.routers import auth, stocks, crypto, indicators, favorites, charts, analysis
-import uvicorn
-import logging
 
 logger = logging.getLogger(__name__)
 # Create FastAPI app
@@ -12,7 +14,7 @@ app = FastAPI(
     version=settings.app_version,
     description="Backend API for StellarIQ mobile app - Stock and Cryptocurrency data with technical analysis",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Configure CORS
@@ -33,17 +35,20 @@ app.include_router(favorites.router)
 app.include_router(charts.router)
 app.include_router(analysis.router)
 
+
 @app.get("/")
 async def root():
     return {
         "message": "StellarIQ Backend API",
         "version": settings.app_version,
-        "status": "running"
+        "status": "running",
     }
+
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 if __name__ == "__main__":
     uvicorn.run(

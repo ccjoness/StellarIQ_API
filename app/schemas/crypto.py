@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class CryptoExchangeRate(BaseModel):
     from_currency_code: str
@@ -13,6 +15,7 @@ class CryptoExchangeRate(BaseModel):
     bid_price: Optional[float] = None
     ask_price: Optional[float] = None
 
+
 class CryptoTimeSeriesData(BaseModel):
     timestamp: str
     open_usd: float
@@ -22,6 +25,7 @@ class CryptoTimeSeriesData(BaseModel):
     volume: float
     market_cap_usd: float
 
+
 class CryptoDailyResponse(BaseModel):
     symbol: str
     market: str
@@ -29,16 +33,20 @@ class CryptoDailyResponse(BaseModel):
     time_zone: str
     data: List[CryptoTimeSeriesData]
 
+
 class CryptoRateRequest(BaseModel):
     from_currency: str
     to_currency: Optional[str] = "USD"
+
 
 class CryptoDailyRequest(BaseModel):
     symbol: str
     market: Optional[str] = "USD"
 
+
 class CryptoQuote(BaseModel):
     """Real-time crypto quote data"""
+
     symbol: str
     name: str
     price: float
@@ -48,20 +56,26 @@ class CryptoQuote(BaseModel):
     market_cap: Optional[float] = None
     last_updated: str
 
+
 class CryptoSearchResult(BaseModel):
     """Crypto search result"""
+
     symbol: str
     name: str
     market_type: str = "crypto"
     exchange: Optional[str] = None
 
+
 class CryptoSearchResponse(BaseModel):
     """Crypto search response"""
+
     results: List[CryptoSearchResult]
     total_count: int
 
+
 class CryptoOverview(BaseModel):
     """Crypto market overview"""
+
     symbol: str
     name: str
     current_price: float
@@ -75,46 +89,86 @@ class CryptoOverview(BaseModel):
     max_supply: Optional[float] = None
     last_updated: str
 
+
 class CryptoTrendingResponse(BaseModel):
     """Trending cryptocurrencies response"""
+
     trending: List[CryptoOverview]
     gainers: List[CryptoOverview]
     losers: List[CryptoOverview]
 
+
 class CryptoPortfolioItem(BaseModel):
     """Crypto portfolio item"""
+
     symbol: str
     name: str
     amount: float = Field(..., gt=0, description="Amount of crypto owned")
-    average_buy_price: Optional[float] = Field(None, gt=0, description="Average purchase price")
+    average_buy_price: Optional[float] = Field(
+        None, gt=0, description="Average purchase price"
+    )
     current_price: Optional[float] = None
     total_value: Optional[float] = None
     profit_loss: Optional[float] = None
     profit_loss_percentage: Optional[float] = None
 
+
 class CryptoPortfolioCreate(BaseModel):
     """Create crypto portfolio item"""
+
     symbol: str = Field(..., min_length=1, max_length=10)
     amount: float = Field(..., gt=0)
     average_buy_price: Optional[float] = Field(None, gt=0)
 
+
 class CryptoPortfolioUpdate(BaseModel):
     """Update crypto portfolio item"""
+
     amount: Optional[float] = Field(None, gt=0)
     average_buy_price: Optional[float] = Field(None, gt=0)
 
+
 class CryptoPortfolioResponse(BaseModel):
     """Crypto portfolio response"""
+
     portfolio: List[CryptoPortfolioItem]
     total_value: float
     total_profit_loss: float
     total_profit_loss_percentage: float
 
+
 # Common cryptocurrency symbols for reference
 POPULAR_CRYPTOS = [
-    "BTC", "ETH", "BNB", "XRP", "ADA", "SOL", "DOGE", "DOT", "AVAX", "SHIB",
-    "MATIC", "LTC", "UNI", "LINK", "ATOM", "XLM", "BCH", "ALGO", "VET", "ICP",
-    "NEAR", "FTM", "SAND", "MANA", "CRO", "LRC", "ENJ", "BAT", "ZEC", "DASH"
+    "BTC",
+    "ETH",
+    "BNB",
+    "XRP",
+    "ADA",
+    "SOL",
+    "DOGE",
+    "DOT",
+    "AVAX",
+    "SHIB",
+    "MATIC",
+    "LTC",
+    "UNI",
+    "LINK",
+    "ATOM",
+    "XLM",
+    "BCH",
+    "ALGO",
+    "VET",
+    "ICP",
+    "NEAR",
+    "FTM",
+    "SAND",
+    "MANA",
+    "CRO",
+    "LRC",
+    "ENJ",
+    "BAT",
+    "ZEC",
+    "DASH",
 ]
 
 # Crypto categories for better organization
@@ -124,5 +178,5 @@ CRYPTO_CATEGORIES = {
     "gaming": ["SAND", "MANA", "ENJ", "AXS", "GALA", "ILV"],
     "layer1": ["BTC", "ETH", "ADA", "SOL", "DOT", "AVAX", "NEAR", "ATOM"],
     "meme": ["DOGE", "SHIB", "FLOKI", "PEPE"],
-    "privacy": ["XMR", "ZEC", "DASH", "ZCASH"]
+    "privacy": ["XMR", "ZEC", "DASH", "ZCASH"],
 }

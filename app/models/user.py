@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
-from sqlalchemy.sql import func
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from app.core.database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -24,4 +26,6 @@ class User(Base):
     password_reset_expires_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
-    favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
+    favorites = relationship(
+        "Favorite", back_populates="user", cascade="all, delete-orphan"
+    )

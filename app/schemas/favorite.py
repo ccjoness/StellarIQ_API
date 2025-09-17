@@ -1,12 +1,16 @@
-from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel
+
 from app.models.favorite import AssetType
+
 
 class FavoriteCreate(BaseModel):
     symbol: str
     asset_type: AssetType
     name: Optional[str] = None
+
 
 class FavoriteResponse(BaseModel):
     id: int
@@ -14,9 +18,10 @@ class FavoriteResponse(BaseModel):
     asset_type: AssetType
     name: Optional[str] = None
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 class FavoriteWithQuote(BaseModel):
     id: int
@@ -29,9 +34,11 @@ class FavoriteWithQuote(BaseModel):
     change_percent: Optional[str] = None
     last_updated: Optional[str] = None
 
+
 class FavoritesListResponse(BaseModel):
     favorites: List[FavoriteWithQuote]
     total_count: int
+
 
 class FavoriteDelete(BaseModel):
     symbol: str

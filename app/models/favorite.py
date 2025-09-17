@@ -1,12 +1,16 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from app.core.database import Base
 import enum
+
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from app.core.database import Base
+
 
 class AssetType(enum.Enum):
     STOCK = "stock"
     CRYPTO = "crypto"
+
 
 class Favorite(Base):
     __tablename__ = "favorites"
@@ -22,6 +26,4 @@ class Favorite(Base):
     user = relationship("User", back_populates="favorites")
 
     # Ensure unique favorite per user per symbol
-    __table_args__ = (
-        {"schema": None},
-    )
+    __table_args__ = ({"schema": None},)

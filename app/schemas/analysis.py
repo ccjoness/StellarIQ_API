@@ -1,8 +1,11 @@
-from pydantic import BaseModel
-from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
+
 from app.schemas.indicators import MarketCondition
+
 
 class AnalysisThresholds(BaseModel):
     rsi_overbought: float = 70.0
@@ -11,12 +14,14 @@ class AnalysisThresholds(BaseModel):
     stoch_oversold: float = 20.0
     # MACD and Bollinger Bands use signal crossovers, not fixed thresholds
 
+
 class IndicatorSignal(BaseModel):
     indicator: str
     condition: MarketCondition
     value: float
     signal_strength: float  # 0-1 scale
     description: str
+
 
 class MarketAnalysisResult(BaseModel):
     symbol: str
@@ -30,15 +35,18 @@ class MarketAnalysisResult(BaseModel):
     risk_level: str  # "low", "medium", "high"
     thresholds_used: AnalysisThresholds
 
+
 class BulkAnalysisRequest(BaseModel):
     symbols: List[str]
     asset_type: str = "stock"  # "stock" or "crypto"
     thresholds: Optional[AnalysisThresholds] = None
 
+
 class BulkAnalysisResponse(BaseModel):
     results: List[MarketAnalysisResult]
     summary: Dict[str, int]  # Count of overbought, oversold, neutral
     analysis_timestamp: datetime
+
 
 class WatchlistAnalysis(BaseModel):
     user_id: int
@@ -49,11 +57,13 @@ class WatchlistAnalysis(BaseModel):
     top_opportunities: List[MarketAnalysisResult]  # Top oversold stocks
     top_risks: List[MarketAnalysisResult]  # Top overbought stocks
 
+
 class MarketScreenerRequest(BaseModel):
     condition: MarketCondition
     min_confidence: Optional[float] = 0.6
     asset_type: Optional[str] = "stock"
     limit: Optional[int] = 20
+
 
 class ScreenerResult(BaseModel):
     symbol: str
