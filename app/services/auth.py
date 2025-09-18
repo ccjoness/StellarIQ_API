@@ -72,7 +72,9 @@ class AuthService:
             username=user_data.username,
             hashed_password=hashed_password,
             agreed_to_disclaimer=user_data.agreed_to_disclaimer,
-            disclaimer_agreed_at=current_time if user_data.agreed_to_disclaimer else None,
+            disclaimer_agreed_at=current_time
+            if user_data.agreed_to_disclaimer
+            else None,
         )
 
         self.db.add(db_user)
@@ -276,7 +278,9 @@ class AuthService:
                 detail="Failed to reset password",
             )
 
-    def change_password(self, user_id: int, current_password: str, new_password: str) -> bool:
+    def change_password(
+        self, user_id: int, current_password: str, new_password: str
+    ) -> bool:
         """Change user password after verifying current password."""
         logger.debug(f"Password change requested for user {user_id}")
 

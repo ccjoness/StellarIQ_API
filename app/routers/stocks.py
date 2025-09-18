@@ -185,14 +185,14 @@ async def get_trending_stocks(
                     name=symbol,  # In real implementation, you'd get company name
                     current_price=quote.price,
                     change_24h=quote.change,
-                    change_percent_24h=float(quote.change_percent.replace('%', '')),
+                    change_percent_24h=float(quote.change_percent.replace("%", "")),
                     volume_24h=quote.volume,
                     market_cap=None,  # Would need additional API call
-                    exchange="NASDAQ"  # Default exchange
+                    exchange="NASDAQ",  # Default exchange
                 )
 
                 # Categorize based on performance
-                change_percent = float(quote.change_percent.replace('%', ''))
+                change_percent = float(quote.change_percent.replace("%", ""))
 
                 if change_percent >= 3.0:  # Gainers: +3% or more
                     gainers.append(stock_overview)
@@ -229,7 +229,7 @@ async def get_trending_stocks(
                 change_24h=2.50,
                 change_percent_24h=1.69,
                 volume_24h=50000000,
-                exchange="NASDAQ"
+                exchange="NASDAQ",
             ),
             StockOverview(
                 symbol="TSLA",
@@ -238,7 +238,7 @@ async def get_trending_stocks(
                 change_24h=-5.00,
                 change_percent_24h=-2.44,
                 volume_24h=30000000,
-                exchange="NASDAQ"
+                exchange="NASDAQ",
             ),
         ]
 

@@ -132,16 +132,14 @@ async def verify_token(current_user: User = Depends(get_current_active_user)):
 async def change_password(
     password_data: ChangePasswordRequest,
     current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Change user password."""
     logger.debug(f"Password change requested for user {current_user.id}")
 
     auth_service = AuthService(db)
     success = auth_service.change_password(
-        current_user.id,
-        password_data.current_password,
-        password_data.new_password
+        current_user.id, password_data.current_password, password_data.new_password
     )
 
     if success:

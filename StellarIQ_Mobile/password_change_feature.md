@@ -36,7 +36,7 @@ The StellarIQ mobile app now includes a comprehensive password change feature th
 #### **Password Strength Indicator**:
 - **Weak**: Basic length requirement only
 - **Fair**: Length + 2 character types
-- **Good**: Length + 3 character types  
+- **Good**: Length + 3 character types
 - **Strong**: Length + 4+ character types (uppercase, lowercase, numbers, special chars)
 
 #### **Security Measures**:
