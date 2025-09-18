@@ -19,6 +19,7 @@ class UserCreate(UserBase):
     """UserCreate class."""
 
     password: str
+    agreed_to_disclaimer: bool = False
 
 
 class UserLogin(BaseModel):
@@ -37,6 +38,8 @@ class UserResponse(UserBase):
     is_active: bool
     is_verified: bool
     created_at: datetime
+    agreed_to_disclaimer: bool
+    disclaimer_agreed_at: Optional[datetime] = None
 
     class Config:
         """Config class."""
@@ -95,5 +98,20 @@ class PasswordResetConfirm(BaseModel):
 class PasswordResetResponse(BaseModel):
 
     """PasswordResetResponse class."""
+
+    message: str
+
+
+class ChangePasswordRequest(BaseModel):
+
+    """ChangePasswordRequest class."""
+
+    current_password: str
+    new_password: str
+
+
+class ChangePasswordResponse(BaseModel):
+
+    """ChangePasswordResponse class."""
 
     message: str

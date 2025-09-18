@@ -8,10 +8,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.core.auth import get_current_active_user
 from app.models.user import User
 from app.schemas.stock import (
+    POPULAR_STOCKS,
+    STOCK_CATEGORIES,
     StockDailyResponse,
     StockIntradayResponse,
+    StockOverview,
+    StockPopularResponse,
     StockQuote,
     StockSearchResponse,
+    StockTrendingResponse,
 )
 from app.services.market_data import MarketDataService
 from app.utils.data_parser import DataParser
@@ -130,4 +135,115 @@ async def get_stock_intraday(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get intraday stock data: {str(e)}",
+        )
+
+
+@router.get("/popular", response_model=StockPopularResponse)
+async def get_popular_stocks(current_user: User = Depends(get_current_active_user)):
+    """Get list of popular stock symbols organized by categories."""
+    return StockPopularResponse(
+        popular_stocks=POPULAR_STOCKS,
+        categories=STOCK_CATEGORIES,
+        description="List of popular stock symbols organized by industry sectors",
+    )
+
+
+@router.get("/categories")
+async def get_stock_categories(current_user: User = Depends(get_current_active_user)):
+    """Get stock symbols organized by industry categories."""
+    return {
+        "categories": STOCK_CATEGORIES,
+        "description": "Stock symbols organized by industry sectors",
+    }
+
+
+@router.get("/trending", response_model=StockTrendingResponse)
+async def get_trending_stocks(
+    limit: Optional[int] = Query(10, description="Number of stocks per category"),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Get trending stocks including gainers, losers, and high volume stocks."""
+    try:
+        market_service = MarketDataService()
+
+        # Get quotes for popular stocks to determine trending
+        trending_stocks = []
+        gainers = []
+        losers = []
+
+        # Sample popular stocks for trending analysis
+        sample_symbols = POPULAR_STOCKS[:30]  # Use first 30 for analysis
+
+        for symbol in sample_symbols:
+            try:
+                quote_data = await market_service.get_stock_quote(symbol)
+                quote = DataParser.parse_stock_quote(quote_data)
+
+                # Create StockOverview from quote data
+                stock_overview = StockOverview(
+                    symbol=quote.symbol,
+                    name=symbol,  # In real implementation, you'd get company name
+                    current_price=quote.price,
+                    change_24h=quote.change,
+                    change_percent_24h=float(quote.change_percent.replace('%', '')),
+                    volume_24h=quote.volume,
+                    market_cap=None,  # Would need additional API call
+                    exchange="NASDAQ"  # Default exchange
+                )
+
+                # Categorize based on performance
+                change_percent = float(quote.change_percent.replace('%', ''))
+
+                if change_percent >= 3.0:  # Gainers: +3% or more
+                    gainers.append(stock_overview)
+                elif change_percent <= -3.0:  # Losers: -3% or less
+                    losers.append(stock_overview)
+
+                # High volume stocks (trending)
+                if quote.volume > 5000000:  # 5M+ volume
+                    trending_stocks.append(stock_overview)
+
+            except Exception as e:
+                logger.warning(f"Failed to get quote for {symbol}: {e}")
+                continue
+
+        # Sort and limit results
+        gainers.sort(key=lambda x: x.change_percent_24h or 0, reverse=True)
+        losers.sort(key=lambda x: x.change_percent_24h or 0)
+        trending_stocks.sort(key=lambda x: x.volume_24h or 0, reverse=True)
+
+        return StockTrendingResponse(
+            trending=trending_stocks[:limit],
+            gainers=gainers[:limit],
+            losers=losers[:limit],
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting trending stocks: {e}")
+        # Return fallback data
+        fallback_stocks = [
+            StockOverview(
+                symbol="AAPL",
+                name="Apple Inc.",
+                current_price=150.00,
+                change_24h=2.50,
+                change_percent_24h=1.69,
+                volume_24h=50000000,
+                exchange="NASDAQ"
+            ),
+            StockOverview(
+                symbol="TSLA",
+                name="Tesla Inc.",
+                current_price=200.00,
+                change_24h=-5.00,
+                change_percent_24h=-2.44,
+                volume_24h=30000000,
+                exchange="NASDAQ"
+            ),
+        ]
+
+        return StockTrendingResponse(
+            trending=fallback_stocks,
+            gainers=[fallback_stocks[0]],
+            losers=[fallback_stocks[1]],
         )

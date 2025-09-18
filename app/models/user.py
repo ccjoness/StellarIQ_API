@@ -29,6 +29,10 @@ class User(Base):
     password_reset_token = Column(Text, nullable=True)
     password_reset_expires_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Educational disclaimer agreement
+    agreed_to_disclaimer = Column(Boolean, default=False, nullable=False)
+    disclaimer_agreed_at = Column(DateTime(timezone=True), nullable=True)
+
     # Relationships
     favorites = relationship(
         "Favorite", back_populates="user", cascade="all, delete-orphan"

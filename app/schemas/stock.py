@@ -97,3 +97,55 @@ class StockSearchRequest(BaseModel):
     """StockSearchRequest class."""
 
     keywords: str
+
+
+class StockOverview(BaseModel):
+    """Stock overview for trending and popular lists."""
+
+    symbol: str
+    name: str
+    current_price: float
+    change_24h: Optional[float] = None
+    change_percent_24h: Optional[float] = None
+    volume_24h: Optional[int] = None
+    market_cap: Optional[float] = None
+    exchange: Optional[str] = None
+
+
+class StockTrendingResponse(BaseModel):
+    """Response for trending stocks."""
+
+    trending: List[StockOverview]
+    gainers: List[StockOverview]
+    losers: List[StockOverview]
+
+
+class StockPopularResponse(BaseModel):
+    """Response for popular stocks."""
+
+    popular_stocks: List[str]
+    categories: dict
+    description: str
+
+
+# Stock categories organized by sector
+STOCK_CATEGORIES = {
+    "technology": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA", "NFLX"],
+    "healthcare": ["JNJ", "PFE", "UNH", "ABBV", "TMO", "DHR", "BMY", "MRK"],
+    "financial": ["JPM", "BAC", "WFC", "GS", "MS", "C", "AXP", "BLK"],
+    "energy": ["XOM", "CVX", "COP", "EOG", "SLB", "PSX", "VLO", "MPC"],
+    "consumer": ["PG", "KO", "PEP", "WMT", "HD", "MCD", "NKE", "SBUX"],
+    "industrial": ["BA", "CAT", "GE", "MMM", "HON", "UPS", "LMT", "RTX"],
+    "utilities": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "XEL", "SRE"],
+    "materials": ["LIN", "APD", "ECL", "SHW", "FCX", "NEM", "DOW", "DD"],
+    "realestate": ["AMT", "PLD", "CCI", "EQIX", "PSA", "SPG", "O", "WELL"],
+    "communication": ["VZ", "T", "TMUS", "CHTR", "CMCSA", "DIS", "NFLX", "GOOGL"],
+}
+
+# Popular stock symbols for reference
+POPULAR_STOCKS = [
+    "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX",
+    "JPM", "JNJ", "PG", "UNH", "HD", "V", "MA", "DIS", "PYPL", "ADBE",
+    "CRM", "NFLX", "INTC", "CSCO", "PEP", "KO", "WMT", "MCD", "NKE",
+    "BA", "CAT", "GE", "XOM", "CVX", "PFE", "MRK", "ABBV"
+]

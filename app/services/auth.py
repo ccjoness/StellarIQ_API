@@ -56,12 +56,23 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken"
             )
 
+        # Validate disclaimer agreement
+        if not user_data.agreed_to_disclaimer:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Must agree to educational disclaimer to create account",
+            )
+
         # Create new user
         hashed_password = get_password_hash(user_data.password)
+        current_time = datetime.now(timezone.utc)
+
         db_user = User(
             email=user_data.email,
             username=user_data.username,
             hashed_password=hashed_password,
+            agreed_to_disclaimer=user_data.agreed_to_disclaimer,
+            disclaimer_agreed_at=current_time if user_data.agreed_to_disclaimer else None,
         )
 
         self.db.add(db_user)
@@ -263,4 +274,59 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to reset password",
+            )
+
+    def change_password(self, user_id: int, current_password: str, new_password: str) -> bool:
+        """Change user password after verifying current password."""
+        logger.debug(f"Password change requested for user {user_id}")
+
+        user = self.get_user_by_id(user_id)
+        if not user:
+            logger.warning(f"Password change attempted for non-existent user {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if not user.is_active:
+            logger.warning(f"Password change attempted for inactive user {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Account is not active",
+            )
+
+        # Verify current password
+        if not verify_password(current_password, user.hashed_password):
+            logger.warning(f"Invalid current password provided for user {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect",
+            )
+
+        # Check if new password is different from current
+        if verify_password(new_password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="New password must be different from current password",
+            )
+
+        try:
+            # Update password
+            user.hashed_password = get_password_hash(new_password)
+
+            # Revoke all refresh tokens for security (force re-login on other devices)
+            user.refresh_token = None
+            user.refresh_token_expires_at = None
+
+            self.db.commit()
+
+            logger.info(f"Password successfully changed for user {user_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to change password for user {user_id}: {e}")
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to change password",
             )

@@ -9,6 +9,8 @@ from app.core.auth import get_current_active_user
 from app.core.database import get_db
 from app.models.user import User
 from app.schemas.user import (
+    ChangePasswordRequest,
+    ChangePasswordResponse,
     PasswordResetConfirm,
     PasswordResetRequest,
     PasswordResetResponse,
@@ -124,3 +126,25 @@ async def confirm_password_reset(
 async def verify_token(current_user: User = Depends(get_current_active_user)):
     """Verify if token is valid."""
     return {"valid": True, "user_id": current_user.id}
+
+
+@router.post("/change-password", response_model=ChangePasswordResponse)
+async def change_password(
+    password_data: ChangePasswordRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Change user password."""
+    logger.debug(f"Password change requested for user {current_user.id}")
+
+    auth_service = AuthService(db)
+    success = auth_service.change_password(
+        current_user.id,
+        password_data.current_password,
+        password_data.new_password
+    )
+
+    if success:
+        return ChangePasswordResponse(
+            message="Password changed successfully. Please log in again."
+        )
