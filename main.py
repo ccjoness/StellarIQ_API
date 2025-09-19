@@ -1,6 +1,7 @@
 """FastAPI application for StellarIQ backend."""
 
 import logging
+import os
 
 import uvicorn
 from fastapi import FastAPI
@@ -58,9 +59,10 @@ async def health_check() -> dict[str, str]:
 
 
 if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=settings.debug,
     )
