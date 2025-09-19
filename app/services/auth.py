@@ -357,7 +357,11 @@ class AuthService:
         try:
             # Update profile fields if provided
             if profile_data.get("full_name") is not None:
-                user.full_name = profile_data["full_name"].strip() if profile_data["full_name"] else None
+                user.full_name = (
+                    profile_data["full_name"].strip()
+                    if profile_data["full_name"]
+                    else None
+                )
 
             if profile_data.get("timezone") is not None:
                 user.timezone = profile_data["timezone"]
