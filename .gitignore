@@ -200,7 +200,7 @@ coverage.xml
 .env.local
 .env.development
 .env.test
-.env.production
+.env
 
 # Temporary files
 *.tmp
