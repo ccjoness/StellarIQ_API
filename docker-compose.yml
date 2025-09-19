@@ -17,14 +17,14 @@ services:
       timeout: 10s
       retries: 3
 
-  redis:
-    image: redis:7-alpine
+  valkey:
+    image: valkey/valkey:8.0-alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - valkey_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -36,7 +36,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://stellariq:password@postgres:5432/stellariq_db
-      - REDIS_URL=redis://redis:6379/0
+      - VALKEY_URL=redis://valkey:6379/0
       - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
       - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -44,7 +44,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
     volumes:
       - .:/app
@@ -63,7 +63,7 @@ services:
       - "8001:8000"
     environment:
       - DATABASE_URL=postgresql://stellariq:password@postgres:5432/stellariq_db
-      - REDIS_URL=redis://redis:6379/0
+      - VALKEY_URL=redis://valkey:6379/0
       - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
       - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -71,7 +71,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
     volumes:
       - .:/app
@@ -86,4 +86,4 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
+  valkey_data:

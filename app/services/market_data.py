@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict
 
-from app.core.redis import redis_client
+from app.core.valkey import valkey_client
 from app.services.alpha_vantage import AlphaVantageClient
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class MarketDataService:
     ) -> Dict[str, Any]:
         """Get data from cache or fetch from API if not cached."""
         # Try to get from cache first
-        cached_data = await redis_client.get(cache_key)
+        cached_data = await valkey_client.get(cache_key)
         if cached_data:
             logger.info(f"Cache hit for key: {cache_key}")
             return cached_data
@@ -31,7 +31,7 @@ class MarketDataService:
         try:
             data = await fetch_func(*args, **kwargs)
             # Cache the result
-            await redis_client.set(cache_key, data)
+            await valkey_client.set(cache_key, data)
             return data
         except Exception as e:
             logger.error(f"Error fetching data: {e}")
@@ -40,7 +40,7 @@ class MarketDataService:
     # Stock Data Methods
     async def get_stock_quote(self, symbol: str) -> Dict[str, Any]:
         """Get current stock quote with caching."""
-        cache_key = redis_client.stock_quote_key(symbol)
+        cache_key = valkey_client.stock_quote_key(symbol)
         logger.info(f"Getting stock quote for {symbol}")
         return await self._get_cached_or_fetch(
             cache_key, self.alpha_vantage.get_stock_quote, symbol
@@ -50,7 +50,7 @@ class MarketDataService:
         self, symbol: str, outputsize: str = "compact"
     ) -> Dict[str, Any]:
         """Get daily stock data with caching."""
-        cache_key = redis_client.stock_daily_key(symbol, outputsize)
+        cache_key = valkey_client.stock_daily_key(symbol, outputsize)
         return await self._get_cached_or_fetch(
             cache_key, self.alpha_vantage.get_stock_daily, symbol, outputsize
         )
@@ -59,7 +59,7 @@ class MarketDataService:
         self, symbol: str, interval: str = "5min", outputsize: str = "compact"
     ) -> Dict[str, Any]:
         """Get intraday stock data with caching."""
-        cache_key = redis_client.stock_intraday_key(symbol, interval, outputsize)
+        cache_key = valkey_client.stock_intraday_key(symbol, interval, outputsize)
         return await self._get_cached_or_fetch(
             cache_key,
             self.alpha_vantage.get_stock_intraday,
@@ -70,7 +70,7 @@ class MarketDataService:
 
     async def search_symbol(self, keywords: str) -> Dict[str, Any]:
         """Search for symbols with caching."""
-        cache_key = redis_client.search_key(keywords)
+        cache_key = valkey_client.search_key(keywords)
         return await self._get_cached_or_fetch(
             cache_key, self.alpha_vantage.search_symbol, keywords
         )
@@ -80,7 +80,7 @@ class MarketDataService:
         self, symbol: str, market: str = "USD"
     ) -> Dict[str, Any]:
         """Get daily crypto data with caching."""
-        cache_key = redis_client.crypto_daily_key(symbol, market)
+        cache_key = valkey_client.crypto_daily_key(symbol, market)
         return await self._get_cached_or_fetch(
             cache_key, self.alpha_vantage.get_crypto_daily, symbol, market
         )
@@ -118,7 +118,7 @@ class MarketDataService:
         self, from_currency: str, to_currency: str = "USD"
     ) -> Dict[str, Any]:
         """Get crypto exchange rate with caching."""
-        cache_key = redis_client.crypto_rate_key(from_currency, to_currency)
+        cache_key = valkey_client.crypto_rate_key(from_currency, to_currency)
         return await self._get_cached_or_fetch(
             cache_key,
             self.alpha_vantage.get_crypto_exchange_rate,
@@ -135,7 +135,7 @@ class MarketDataService:
         series_type: str = "close",
     ) -> Dict[str, Any]:
         """Get RSI indicator with caching."""
-        cache_key = redis_client.rsi_key(symbol, interval, time_period, series_type)
+        cache_key = valkey_client.rsi_key(symbol, interval, time_period, series_type)
         return await self._get_cached_or_fetch(
             cache_key,
             self.alpha_vantage.get_rsi,
@@ -149,14 +149,14 @@ class MarketDataService:
         self, symbol: str, interval: str = "daily", series_type: str = "close"
     ) -> Dict[str, Any]:
         """Get MACD indicator with caching."""
-        cache_key = redis_client.macd_key(symbol, interval, series_type)
+        cache_key = valkey_client.macd_key(symbol, interval, series_type)
         return await self._get_cached_or_fetch(
             cache_key, self.alpha_vantage.get_macd, symbol, interval, series_type
         )
 
     async def get_stoch(self, symbol: str, interval: str = "daily") -> Dict[str, Any]:
         """Get Stochastic indicator with caching."""
-        cache_key = redis_client.stoch_key(symbol, interval)
+        cache_key = valkey_client.stoch_key(symbol, interval)
         return await self._get_cached_or_fetch(
             cache_key, self.alpha_vantage.get_stoch, symbol, interval
         )
@@ -169,7 +169,7 @@ class MarketDataService:
         series_type: str = "close",
     ) -> Dict[str, Any]:
         """Get Bollinger Bands indicator with caching."""
-        cache_key = redis_client.bbands_key(symbol, interval, time_period, series_type)
+        cache_key = valkey_client.bbands_key(symbol, interval, time_period, series_type)
         return await self._get_cached_or_fetch(
             cache_key,
             self.alpha_vantage.get_bbands,
@@ -191,4 +191,4 @@ class MarketDataService:
         ]
 
         for pattern in patterns:
-            await redis_client.delete_pattern(pattern)
+            await valkey_client.delete_pattern(pattern)

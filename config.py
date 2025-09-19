@@ -16,8 +16,10 @@ class Settings(BaseSettings):
         "DATABASE_URL", "postgresql://stellariq:password@localhost:5432/stellariq_db"
     )
 
-    # Redis
-    redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    # Valkey (Redis-compatible)
+    valkey_url: str = os.getenv(
+        "VALKEY_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    )
 
     # Alpha Vantage API
     alpha_vantage_api_key: str = os.getenv("ALPHA_VANTAGE_API_KEY", "")

@@ -13,8 +13,7 @@ uvicorn = {extras = ["standard"], version = "^0.24.0"}
 sqlalchemy = "^2.0.23"
 alembic = "^1.12.1"
 psycopg2-binary = "^2.9.9"
-redis = "^5.0.1"
-aioredis = "^2.0.1"
+valkey = "^6.1.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-multipart = "^0.0.6"
@@ -93,8 +92,7 @@ strict_equality = true
 
 [[tool.mypy.overrides]]
 module = [
-    "redis.*",
-    "aioredis.*",
+    "valkey.*",
     "pandas.*",
     "numpy.*",
 ]
