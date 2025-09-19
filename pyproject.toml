@@ -2,9 +2,10 @@
 name = "stellariq-backend"
 version = "0.1.0"
 description = "A comprehensive FastAPI backend for a mobile stock and cryptocurrency tracking application"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Chris Jones <chris.charles.jones@gmail.com>"]
 readme = "README.md"
-packages = [{include = "app"}]
+package-mode = false
+#packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
