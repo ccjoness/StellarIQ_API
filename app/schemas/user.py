@@ -56,6 +56,40 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
 
 
+class UserProfileUpdate(BaseModel):
+
+    """UserProfileUpdate class for updating profile information."""
+
+    full_name: Optional[str] = None
+    timezone: Optional[str] = None
+    preferred_currency: Optional[str] = None
+    email_notifications: Optional[bool] = None
+    push_notifications: Optional[bool] = None
+
+
+class UserProfileResponse(UserBase):
+
+    """UserProfileResponse class with full profile information."""
+
+    id: int
+    full_name: Optional[str] = None
+    timezone: str
+    preferred_currency: str
+    email_notifications: bool
+    push_notifications: bool
+    is_active: bool
+    is_verified: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    agreed_to_disclaimer: bool
+    disclaimer_agreed_at: Optional[datetime] = None
+
+    class Config:
+        """Config class."""
+
+        from_attributes = True
+
+
 class Token(BaseModel):
 
     """Token class."""

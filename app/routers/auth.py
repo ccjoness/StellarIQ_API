@@ -18,6 +18,8 @@ from app.schemas.user import (
     TokenRefresh,
     UserCreate,
     UserLogin,
+    UserProfileResponse,
+    UserProfileUpdate,
     UserResponse,
 )
 from app.services.auth import AuthService
@@ -50,9 +52,9 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=UserProfileResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
-    """Get current user information."""
+    """Get current user information with full profile."""
     return current_user
 
 
@@ -146,3 +148,20 @@ async def change_password(
         return ChangePasswordResponse(
             message="Password changed successfully. Please log in again."
         )
+
+
+@router.put("/profile", response_model=UserProfileResponse)
+async def update_user_profile(
+    profile_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Update user profile information."""
+    logger.debug(f"Profile update requested for user {current_user.id}")
+
+    auth_service = AuthService(db)
+    updated_user = auth_service.update_user_profile(
+        current_user.id, profile_data.model_dump(exclude_unset=True)
+    )
+
+    return updated_user

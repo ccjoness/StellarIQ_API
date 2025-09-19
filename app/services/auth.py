@@ -334,3 +334,56 @@ class AuthService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to change password",
             )
+
+    def update_user_profile(self, user_id: int, profile_data: dict) -> User:
+        """Update user profile information."""
+        logger.debug(f"Profile update requested for user {user_id}")
+
+        user = self.get_user_by_id(user_id)
+        if not user:
+            logger.warning(f"Profile update attempted for non-existent user {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if not user.is_active:
+            logger.warning(f"Profile update attempted for inactive user {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Account is not active",
+            )
+
+        try:
+            # Update profile fields if provided
+            if profile_data.get("full_name") is not None:
+                user.full_name = profile_data["full_name"].strip() if profile_data["full_name"] else None
+
+            if profile_data.get("timezone") is not None:
+                user.timezone = profile_data["timezone"]
+
+            if profile_data.get("preferred_currency") is not None:
+                user.preferred_currency = profile_data["preferred_currency"]
+
+            if profile_data.get("email_notifications") is not None:
+                user.email_notifications = profile_data["email_notifications"]
+
+            if profile_data.get("push_notifications") is not None:
+                user.push_notifications = profile_data["push_notifications"]
+
+            # Update the updated_at timestamp
+            user.updated_at = datetime.now(timezone.utc)
+
+            self.db.commit()
+            self.db.refresh(user)
+
+            logger.info(f"Profile successfully updated for user {user_id}")
+            return user
+
+        except Exception as e:
+            logger.error(f"Failed to update profile for user {user_id}: {e}")
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update profile",
+            )

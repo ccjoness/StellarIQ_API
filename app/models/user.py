@@ -33,6 +33,13 @@ class User(Base):
     agreed_to_disclaimer = Column(Boolean, default=False, nullable=False)
     disclaimer_agreed_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Profile fields
+    full_name = Column(String, nullable=True)
+    timezone = Column(String, default="UTC", nullable=False)
+    preferred_currency = Column(String, default="USD", nullable=False)
+    email_notifications = Column(Boolean, default=True, nullable=False)
+    push_notifications = Column(Boolean, default=True, nullable=False)
+
     # Relationships
     favorites = relationship(
         "Favorite", back_populates="user", cascade="all, delete-orphan"
