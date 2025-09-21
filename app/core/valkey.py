@@ -88,6 +88,9 @@ class ValkeyClient:
     def stock_quote_key(self, symbol: str) -> str:
         return self._generate_cache_key("stock_quote", symbol=symbol)
 
+    def stock_trending_key(self, symbol: str) -> str:
+        return self._generate_cache_key("stock_trending")
+
     def stock_daily_key(self, symbol: str, outputsize: str = "compact") -> str:
         return self._generate_cache_key(
             "stock_daily", symbol=symbol, outputsize=outputsize

@@ -21,6 +21,19 @@ class StockQuote(BaseModel):
     change_percent: str
 
 
+class TrendingStock(BaseModel):
+
+    """TrendingStock class."""
+
+    ticker: str
+    name: Optional[str] = None
+    price: float
+    change_amount: float
+    change_percentage: float
+    volume_humanized: str
+    volume: int
+
+
 class StockSearchResult(BaseModel):
 
     """StockSearchResult class."""
@@ -114,10 +127,11 @@ class StockOverview(BaseModel):
 
 class StockTrendingResponse(BaseModel):
     """Response for trending stocks."""
-
-    trending: List[StockOverview]
-    gainers: List[StockOverview]
-    losers: List[StockOverview]
+    metadata: str
+    last_updated: str
+    trending: List[TrendingStock]
+    gainers: List[TrendingStock]
+    losers: List[TrendingStock]
 
 
 class StockPopularResponse(BaseModel):
@@ -126,6 +140,66 @@ class StockPopularResponse(BaseModel):
     popular_stocks: List[str]
     categories: dict
     description: str
+
+class StockCompanyInfo(BaseModel):
+    """Company information for a stock."""
+
+    symbol: str
+    asset_type: str
+    name: str
+    description: str
+    cik: str
+    exchange: str
+    currency: str
+    country: str
+    sector: str
+    industry: str
+    address: str
+    official_site: str
+    fiscal_year_end: str
+    latest_quarter: str
+    market_capitalization: str
+    ebitda: str
+    pe_ratio: str
+    peg_ratio: str
+    book_value: str
+    dividend_per_share: str
+    dividend_yield: str
+    eps: str
+    revenue_per_share_ttm: str
+    profit_margin: str
+    operating_margin_ttm: str
+    return_on_assets_ttm: str
+    return_on_equity_ttm: str
+    revenue_ttm: str
+    gross_profit_ttm: str
+    diluted_epsttm: str
+    quarterly_earnings_growth_yoy: str
+    quarterly_revenue_growth_yoy: str
+    analyst_target_price: str
+    analyst_rating_strong_buy: str
+    analyst_rating_buy: str
+    analyst_rating_hold: str
+    analyst_rating_sell: str
+    analyst_rating_strong_sell: str
+    trailing_pe: str
+    forward_pe: str
+    price_to_sales_ratio_ttm: str
+    price_to_book_ratio: str
+    evto_revenue: str
+    evto_ebitda: str
+    beta: str
+    week_high_52: str
+    week_low_52: str
+    day_moving_average_50: str
+    day_moving_average_200: str
+    shares_outstanding: str
+    shares_float: str
+    percent_insiders: str
+    percent_institutions: str
+    dividend_date: str
+    ex_dividend_date: str
+
 
 
 # Stock categories organized by sector

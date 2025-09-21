@@ -101,6 +101,11 @@ class AlphaVantageClient:
         params = {"function": "GLOBAL_QUOTE", "symbol": symbol}
         return await self._make_request(params)
 
+    async def get_stock_trending(self, limit: int) -> Dict[str, Any]:
+        """Get current stock quote."""
+        params = {"function": "TOP_GAINERS_LOSERS", limit: limit}
+        return await self._make_request(params)
+
     async def search_symbol(self, keywords: str) -> Dict[str, Any]:
         """Search for stock symbols."""
         params = {"function": "SYMBOL_SEARCH", "keywords": keywords}

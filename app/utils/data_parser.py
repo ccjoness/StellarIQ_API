@@ -2,15 +2,14 @@
 
 import logging
 from typing import Any, Dict, List
-
+import humanize
 from app.schemas.crypto import CryptoExchangeRate, CryptoTimeSeriesData
-from app.schemas.stock import StockQuote, StockSearchResult, TimeSeriesData
+from app.schemas.stock import StockQuote, StockSearchResult, TimeSeriesData, TrendingStock, StockCompanyInfo
 
 logger = logging.getLogger(__name__)
 
 
 class DataParser:
-
     """DataParser class."""
 
     @staticmethod
@@ -29,10 +28,94 @@ class DataParser:
                 previous_close=float(quote_data.get("08. previous close", 0)),
                 change=float(quote_data.get("09. change", 0)),
                 change_percent=quote_data.get("10. change percent", "0%"),
-            )
+                )
         except (KeyError, ValueError, TypeError) as e:
             logger.error(f"Error parsing stock quote: {e}")
             raise ValueError("Invalid stock quote data format")
+
+    @staticmethod
+    def parse_stock_trending(data: Dict[str, Any], ticker_symbol_to_name_dict: Dict[str, Any]) -> StockQuote:
+        """Parse Alpha Vantage trending stocks."""
+        try:
+            ticker = data.get("ticker", "")
+            return TrendingStock(
+                ticker=ticker,
+                name=ticker_symbol_to_name_dict.get(ticker, ticker),
+                price=float(data.get("price", 0)),
+                change_amount=float(data.get("change_amount", 0)),
+                change_percentage=round(float(data.get("change_percentage", "0").replace("%", "")), 2),
+                volume_humanized=humanize.intword(data.get("volume", "0")),
+                volume=int(data.get("volume", "0")),
+                )
+        except (KeyError, ValueError, TypeError) as e:
+            logger.error(f"Error parsing trending stocks: {e}")
+            raise ValueError("Invalid trending stocks data format")
+
+    @staticmethod
+    def parse_company_info(data: Dict[str, Any]) -> StockQuote:
+        """Parse Alpha Vantage company info response."""
+        try:
+            return StockCompanyInfo(
+                symbol=data.get("Symbol", ""),
+                asset_type=data.get("AssetType", ""),
+                name=data.get("Name", ""),
+                description=data.get("Description", ""),
+                cik=data.get("CIK", ""),
+                exchange=data.get("Exchange", ""),
+                currency=data.get("Currency", ""),
+                country=data.get("Country", ""),
+                sector=data.get("Sector", ""),
+                industry=data.get("Industry", ""),
+                address=data.get("Address", ""),
+                official_site=data.get("OfficialSite", ""),
+                fiscal_year_end=data.get("FiscalYearEnd", ""),
+                latest_quarter=data.get("LatestQuarter", ""),
+                market_capitalization=data.get("MarketCapitalization", ""),
+                ebitda=data.get("EBITDA", ""),
+                pe_ratio=data.get("PERatio", ""),
+                peg_ratio=data.get("PEGRatio", ""),
+                book_value=data.get("BookValue", ""),
+                dividend_per_share=data.get("DividendPerShare", ""),
+                dividend_yield=data.get("DividendYield", ""),
+                eps=data.get("EPS", ""),
+                revenue_per_share_ttm=data.get("RevenuePerShareTTM", ""),
+                profit_margin=data.get("ProfitMargin", ""),
+                operating_margin_ttm=data.get("OperatingMarginTTM", ""),
+                return_on_assets_ttm=data.get("ReturnOnAssetsTTM", ""),
+                return_on_equity_ttm=data.get("ReturnOnEquityTTM", ""),
+                revenue_ttm=data.get("RevenueTTM", ""),
+                gross_profit_ttm=data.get("GrossProfitTTM", ""),
+                diluted_epsttm=data.get("DilutedEPSTTM", ""),
+                quarterly_earnings_growth_yoy=data.get("QuarterlyEarningsGrowthYOY", ""),
+                quarterly_revenue_growth_yoy=data.get("QuarterlyRevenueGrowthYOY", ""),
+                analyst_target_price=data.get("AnalystTargetPrice", ""),
+                analyst_rating_strong_buy=data.get("AnalystRatingStrongBuy", ""),
+                analyst_rating_buy=data.get("AnalystRatingBuy", ""),
+                analyst_rating_hold=data.get("AnalystRatingHold", ""),
+                analyst_rating_sell=data.get("AnalystRatingSell", ""),
+                analyst_rating_strong_sell=data.get("AnalystRatingStrongSell", ""),
+                trailing_pe=data.get("TrailingPE", ""),
+                forward_pe=data.get("ForwardPE", ""),
+                price_to_sales_ratio_ttm=data.get("PriceToSalesRatioTTM", ""),
+                price_to_book_ratio=data.get("PriceToBookRatio", ""),
+                evto_revenue=data.get("EVToRevenue", ""),
+                evto_ebitda=data.get("EVToEBITDA", ""),
+                beta=data.get("Beta", ""),
+                week_high_52=data.get("52WeekHigh", ""),
+                week_low_52=data.get("52WeekLow", ""),
+                day_moving_average_50=data.get("50DayMovingAverage", ""),
+                day_moving_average_200=data.get("200DayMovingAverage", ""),
+                shares_outstanding=data.get("SharesOutstanding", ""),
+                shares_float=data.get("SharesFloat", ""),
+                percent_insiders=data.get("PercentInsiders", ""),
+                percent_institutions=data.get("PercentInstitutions", ""),
+                dividend_date=data.get("DividendDate", ""),
+                ex_dividend_date=data.get("ExDividendDate", ""),
+                )
+        except (KeyError, ValueError, TypeError) as e:
+            logger.error(f"Error parsing company info: {e}")
+            raise ValueError("Invalid company info data format")
+
 
     @staticmethod
     def parse_search_results(data: Dict[str, Any]) -> List[StockSearchResult]:
@@ -52,7 +135,7 @@ class DataParser:
                     timezone=match.get("7. timezone", ""),
                     currency=match.get("8. currency", ""),
                     match_score=float(match.get("9. matchScore", 0)),
-                )
+                    )
                 results.append(result)
 
             return results
@@ -62,8 +145,8 @@ class DataParser:
 
     @staticmethod
     def parse_time_series(
-        data: Dict[str, Any], series_key: str
-    ) -> List[TimeSeriesData]:
+            data: Dict[str, Any], series_key: str
+            ) -> List[TimeSeriesData]:
         """Parse Alpha Vantage time series data."""
         try:
             results = []
@@ -77,7 +160,7 @@ class DataParser:
                     low=float(values.get("3. low", 0)),
                     close=float(values.get("4. close", 0)),
                     volume=int(values.get("5. volume", 0)),
-                )
+                    )
                 results.append(result)
 
             # Sort by timestamp (most recent first)
@@ -94,8 +177,8 @@ class DataParser:
 
     @staticmethod
     def parse_intraday_data(
-        data: Dict[str, Any], interval: str
-    ) -> List[TimeSeriesData]:
+            data: Dict[str, Any], interval: str
+            ) -> List[TimeSeriesData]:
         """Parse intraday time series data."""
         series_key = f"Time Series ({interval})"
         return DataParser.parse_time_series(data, series_key)
@@ -109,7 +192,7 @@ class DataParser:
             "last_refreshed": metadata.get("3. Last Refreshed", ""),
             "time_zone": metadata.get("5. Time Zone", ""),
             "interval": metadata.get("4. Interval", ""),
-        }
+            }
 
     @staticmethod
     def parse_crypto_exchange_rate(data: Dict[str, Any]) -> CryptoExchangeRate:
@@ -130,7 +213,7 @@ class DataParser:
                 ask_price=float(rate_data.get("9. Ask Price", 0))
                 if rate_data.get("9. Ask Price")
                 else None,
-            )
+                )
         except (KeyError, ValueError, TypeError) as e:
             logger.error(f"Error parsing crypto exchange rate: {e}")
             raise ValueError("Invalid crypto exchange rate data format")
@@ -151,7 +234,7 @@ class DataParser:
                     close_usd=float(values.get("4a. close (USD)", 0)),
                     volume=float(values.get("5. volume", 0)),
                     market_cap_usd=float(values.get("6. market cap (USD)", 0)),
-                )
+                    )
                 results.append(result)
 
             # Sort by timestamp (most recent first)
@@ -171,12 +254,12 @@ class DataParser:
             "market": metadata.get("4. Market Code", ""),
             "last_refreshed": metadata.get("5. Last Refreshed", ""),
             "time_zone": metadata.get("6. Time Zone", ""),
-        }
+            }
 
     @staticmethod
     def parse_crypto_intraday_data(
-        data: Dict[str, Any], interval: str
-    ) -> List[CryptoTimeSeriesData]:
+            data: Dict[str, Any], interval: str
+            ) -> List[CryptoTimeSeriesData]:
         """Parse crypto intraday time series data."""
         try:
             results = []
@@ -192,7 +275,7 @@ class DataParser:
                     close_usd=float(values.get("4. close", 0)),
                     volume=float(values.get("5. volume", 0)),
                     market_cap_usd=0,  # Not available in intraday data
-                )
+                    )
                 results.append(result)
 
             # Sort by timestamp (most recent first)
@@ -218,7 +301,7 @@ class DataParser:
                 "ask_price": float(rate_data.get("9. Ask Price", 0))
                 if rate_data.get("9. Ask Price")
                 else None,
-            }
+                }
         except (KeyError, ValueError, TypeError) as e:
             logger.error(f"Error parsing crypto quote: {e}")
             raise ValueError("Invalid crypto quote data format")

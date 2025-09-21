@@ -221,3 +221,4 @@ Thumbs.db
 
 # Poetry virtual environment (if created in project)
 .venv/
+.env.prod
