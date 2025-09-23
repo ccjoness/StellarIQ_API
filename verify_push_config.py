@@ -8,7 +8,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
-BASE_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 
 def check_environment():
@@ -66,7 +66,7 @@ def check_environment():
 def check_api_health():
     """Check if API is running"""
     try:
-        url = f"{BASE_URL}/health"
+        url = f"{API_URL}/health"
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             print("✅ API is running and healthy")
@@ -93,7 +93,7 @@ def check_notification_endpoints():
 
     for endpoint in endpoints:
         try:
-            url = f"{BASE_URL}{endpoint}"
+            url = f"{API_URL}{endpoint}"
             response = requests.get(url, timeout=5)
             # We expect 401 (unauthorized) which means the endpoint exists
             if response.status_code == 401:
