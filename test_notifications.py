@@ -6,16 +6,15 @@ Test script for notification system
 import asyncio
 import json
 from datetime import datetime
-
+import os
 import requests
 
-BASE_URL = "http://localhost:8000"
-
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def test_api_health():
     """Test if API is running"""
     try:
-        response = requests.get(f"{BASE_URL}/health")
+        response = requests.get(f"{API_URL}/health")
         print(f"✅ API Health: {response.status_code} - {response.json()}")
         return True
     except Exception as e:
@@ -34,7 +33,7 @@ def test_user_registration():
             "agreed_to_disclaimer": True,
         }
 
-        response = requests.post(f"{BASE_URL}/auth/register", json=user_data)
+        response = requests.post(f"{API_URL}/auth/register", json=user_data)
         if response.status_code == 201:
             print(f"✅ User registration: {response.status_code}")
             return response.json()
@@ -56,7 +55,7 @@ def test_user_login():
     try:
         login_data = {"email": "test2@example.com", "password": "testpassword123"}
 
-        response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
+        response = requests.post(f"{API_URL}/auth/login", json=login_data)
         if response.status_code == 200:
             result = response.json()
             print(f"✅ User login: {response.status_code}")
@@ -84,7 +83,7 @@ def test_add_favorite(token):
         }
 
         response = requests.post(
-            f"{BASE_URL}/favorites/", json=favorite_data, headers=headers
+            f"{API_URL}/favorites/", json=favorite_data, headers=headers
         )
         if response.status_code in [200, 201]:
             result = response.json()
@@ -109,7 +108,7 @@ def test_device_token_registration(token):
         }
 
         response = requests.post(
-            f"{BASE_URL}/notifications/device-tokens", json=token_data, headers=headers
+            f"{API_URL}/notifications/device-tokens", json=token_data, headers=headers
         )
         if response.status_code in [200, 201]:
             result = response.json()
@@ -131,7 +130,7 @@ def test_monitoring_status(token):
         headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.get(
-            f"{BASE_URL}/notifications/monitoring-status", headers=headers
+            f"{API_URL}/notifications/monitoring-status", headers=headers
         )
         if response.status_code == 200:
             result = response.json()
@@ -162,7 +161,7 @@ def test_trigger_monitoring(token):
         headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.post(
-            f"{BASE_URL}/notifications/trigger-monitoring", headers=headers
+            f"{API_URL}/notifications/trigger-monitoring", headers=headers
         )
         if response.status_code == 200:
             result = response.json()
@@ -185,7 +184,7 @@ def test_notification_summary(token):
     try:
         headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.get(f"{BASE_URL}/notifications/summary", headers=headers)
+        response = requests.get(f"{API_URL}/notifications/summary", headers=headers)
         if response.status_code == 200:
             result = response.json()
             print(f"✅ Notification summary: {response.status_code}")

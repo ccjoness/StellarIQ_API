@@ -157,7 +157,6 @@ class CryptoPortfolioResponse(BaseModel):
 POPULAR_CRYPTOS = [
     "BTC",
     "ETH",
-    "BNB",
     "XRP",
     "ADA",
     "SOL",

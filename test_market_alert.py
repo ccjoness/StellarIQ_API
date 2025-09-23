@@ -4,17 +4,17 @@ Test script for market alert functionality
 """
 
 import time
-
+import os
 import requests
 
-BASE_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 
 def get_auth_token():
     """Get authentication token"""
     login_data = {"email": "test2@example.com", "password": "testpassword123"}
 
-    response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
+    response = requests.post(f"{API_URL}/auth/login", json=login_data)
     if response.status_code == 200:
         return response.json().get("access_token")
     return None
@@ -27,7 +27,7 @@ def test_market_alert(token, symbol="AAPL"):
 
         print(f"🔍 Testing market alert for {symbol}...")
         response = requests.post(
-            f"{BASE_URL}/notifications/test-alert/{symbol}", headers=headers
+            f"{API_URL}/notifications/test-alert/{symbol}", headers=headers
         )
 
         if response.status_code == 200:
@@ -47,7 +47,7 @@ def check_notification_history(token):
     try:
         headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.get(f"{BASE_URL}/notifications/history", headers=headers)
+        response = requests.get(f"{API_URL}/notifications/history", headers=headers)
         if response.status_code == 200:
             notifications = response.json()
             print(f"📋 Found {len(notifications)} notifications:")
@@ -76,7 +76,7 @@ def check_monitoring_stats(token):
         headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.get(
-            f"{BASE_URL}/notifications/monitoring-status", headers=headers
+            f"{API_URL}/notifications/monitoring-status", headers=headers
         )
         if response.status_code == 200:
             result = response.json()

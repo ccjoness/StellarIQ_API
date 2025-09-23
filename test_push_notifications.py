@@ -11,14 +11,13 @@ from datetime import datetime
 import httpx
 import requests
 
-BASE_URL = "http://localhost:8000"
-
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def get_auth_token():
     """Get authentication token"""
     login_data = {"email": "test2@example.com", "password": "testpassword123"}
 
-    response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
+    response = requests.post(f"{API_URL}/auth/login", json=login_data)
     if response.status_code == 200:
         return response.json().get("access_token")
     return None
@@ -52,7 +51,7 @@ def register_test_device_token(token):
     }
 
     response = requests.post(
-        f"{BASE_URL}/notifications/device-tokens", json=token_data, headers=headers
+        f"{API_URL}/notifications/device-tokens", json=token_data, headers=headers
     )
     if response.status_code in [200, 201]:
         print("✅ Device token registered successfully")
@@ -136,7 +135,7 @@ def test_api_notification_endpoint(token, device_token):
 
     # Test market alert
     response = requests.post(
-        f"{BASE_URL}/notifications/test-alert/AAPL", headers=headers
+        f"{API_URL}/notifications/test-alert/AAPL", headers=headers
     )
     if response.status_code == 200:
         result = response.json()
@@ -152,7 +151,7 @@ def check_notification_history(token):
     headers = {"Authorization": f"Bearer {token}"}
 
     response = requests.get(
-        f"{BASE_URL}/notifications/history?limit=5", headers=headers
+        f"{API_URL}/notifications/history?limit=5", headers=headers
     )
     if response.status_code == 200:
         notifications = response.json()

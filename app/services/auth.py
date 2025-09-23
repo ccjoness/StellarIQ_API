@@ -75,6 +75,7 @@ class AuthService:
             disclaimer_agreed_at=current_time
             if user_data.agreed_to_disclaimer
             else None,
+            full_name=user_data.full_name,
         )
 
         self.db.add(db_user)
