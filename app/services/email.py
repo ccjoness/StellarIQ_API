@@ -93,6 +93,55 @@ class EmailService:
             logger.error(f"Failed to send SMTP email to {to_email}: {e}")
             return False
 
+    def send_market_alert_email(
+        self, to_email: str, title: str, body: str, alert_data
+    ) -> bool:
+        """Send market alert email"""
+        try:
+            subject = f"StellarIQ - {title}"
+
+            # Create detailed email body
+            email_body = f"""
+Hello,
+
+{body}
+
+Market Details:
+- Symbol: {alert_data.symbol}
+- Condition: {alert_data.market_condition.title()}
+- Confidence: {alert_data.confidence_score:.1%}
+"""
+
+            if alert_data.current_price:
+                email_body += f"- Current Price: ${alert_data.current_price:.2f}\n"
+
+            if alert_data.previous_condition:
+                email_body += (
+                    f"- Previous Condition: {alert_data.previous_condition.title()}\n"
+                )
+
+            email_body += """
+This alert was generated based on technical analysis of market indicators.
+Please conduct your own research before making any investment decisions.
+
+Best regards,
+The StellarIQ Team
+"""
+
+            # For development, just log the email content
+            logger.info(f"Market alert email for {to_email}:")
+            logger.info(f"Subject: {subject}")
+            logger.info(f"Body: {email_body}")
+
+            # In production, you would send the actual email
+            # return self._send_smtp_email(to_email, subject, email_body)
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to send market alert email to {to_email}: {e}")
+            return False
+
 
 # Global email service instance
 email_service = EmailService()

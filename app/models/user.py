@@ -44,3 +44,9 @@ class User(Base):
     favorites = relationship(
         "Favorite", back_populates="user", cascade="all, delete-orphan"
     )
+    device_tokens = relationship(
+        "DeviceToken", back_populates="user", cascade="all, delete-orphan"
+    )
+    notifications = relationship(
+        "Notification", back_populates="user", cascade="all, delete-orphan"
+    )

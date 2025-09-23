@@ -16,6 +16,7 @@ from app.schemas.favorite import (
     FavoritesListResponse,
     FavoriteWithQuote,
 )
+from app.schemas.notification import NotificationPreferencesUpdate
 from app.services.favorites import FavoritesService
 
 logger = logging.getLogger(__name__)
@@ -189,4 +190,53 @@ async def get_favorites_stats(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get favorites stats: {str(e)}",
+        )
+
+
+@router.put("/{favorite_id}/notifications", response_model=FavoriteResponse)
+async def update_notification_preferences(
+    favorite_id: int,
+    preferences: NotificationPreferencesUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Update notification preferences for a favorite."""
+    try:
+        from app.models.favorite import Favorite
+
+        # Get the favorite and verify ownership
+        favorite = (
+            db.query(Favorite)
+            .filter(Favorite.id == favorite_id, Favorite.user_id == current_user.id)
+            .first()
+        )
+
+        if not favorite:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Favorite not found",
+            )
+
+        # Update notification preferences
+        if preferences.alert_enabled is not None:
+            favorite.alert_enabled = preferences.alert_enabled
+        if preferences.alert_on_overbought is not None:
+            favorite.alert_on_overbought = preferences.alert_on_overbought
+        if preferences.alert_on_oversold is not None:
+            favorite.alert_on_oversold = preferences.alert_on_oversold
+        if preferences.alert_on_neutral is not None:
+            favorite.alert_on_neutral = preferences.alert_on_neutral
+
+        db.commit()
+        db.refresh(favorite)
+
+        return favorite
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating notification preferences: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update notification preferences: {str(e)}",
         )

@@ -50,6 +50,10 @@ class FavoritesService:
             symbol=favorite_data.symbol.upper(),
             asset_type=favorite_data.asset_type,
             name=favorite_data.name,
+            alert_enabled=favorite_data.alert_enabled or False,
+            alert_on_overbought=favorite_data.alert_on_overbought or True,
+            alert_on_oversold=favorite_data.alert_on_oversold or True,
+            alert_on_neutral=favorite_data.alert_on_neutral or False,
         )
 
         self.db.add(db_favorite)

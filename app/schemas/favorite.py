@@ -15,6 +15,10 @@ class FavoriteCreate(BaseModel):
     symbol: str
     asset_type: AssetType
     name: Optional[str] = None
+    alert_enabled: Optional[bool] = False
+    alert_on_overbought: Optional[bool] = True
+    alert_on_oversold: Optional[bool] = True
+    alert_on_neutral: Optional[bool] = False
 
 
 class FavoriteResponse(BaseModel):
@@ -26,6 +30,12 @@ class FavoriteResponse(BaseModel):
     asset_type: AssetType
     name: Optional[str] = None
     created_at: datetime
+    alert_enabled: bool
+    alert_on_overbought: bool
+    alert_on_oversold: bool
+    alert_on_neutral: bool
+    last_alert_state: Optional[str] = None
+    last_alert_sent: Optional[datetime] = None
 
     class Config:
         """Config class."""
@@ -46,6 +56,12 @@ class FavoriteWithQuote(BaseModel):
     change: Optional[float] = None
     change_percent: Optional[str] = None
     last_updated: Optional[str] = None
+    alert_enabled: bool
+    alert_on_overbought: bool
+    alert_on_oversold: bool
+    alert_on_neutral: bool
+    last_alert_state: Optional[str] = None
+    last_alert_sent: Optional[datetime] = None
 
 
 class FavoritesListResponse(BaseModel):
