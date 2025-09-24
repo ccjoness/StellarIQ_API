@@ -101,6 +101,12 @@ class FavoritesService:
                 asset_type=favorite.asset_type,
                 name=favorite.name,
                 created_at=favorite.created_at,
+                alert_enabled=favorite.alert_enabled,
+                alert_on_overbought=favorite.alert_on_overbought,
+                alert_on_oversold=favorite.alert_on_oversold,
+                alert_on_neutral=favorite.alert_on_neutral,
+                last_alert_state=favorite.last_alert_state,
+                last_alert_sent=favorite.last_alert_sent,
             )
 
             try:
