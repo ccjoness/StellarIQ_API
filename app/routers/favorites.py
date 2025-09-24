@@ -96,12 +96,18 @@ async def get_favorites(
                         asset_type=favorite.asset_type,
                         name=favorite.name,
                         created_at=favorite.created_at,
+                        # Market condition alerts
                         alert_enabled=favorite.alert_enabled,
                         alert_on_overbought=favorite.alert_on_overbought,
                         alert_on_oversold=favorite.alert_on_oversold,
                         alert_on_neutral=favorite.alert_on_neutral,
                         last_alert_state=favorite.last_alert_state,
                         last_alert_sent=favorite.last_alert_sent,
+                        # Price alerts
+                        price_alert_enabled=favorite.price_alert_enabled,
+                        alert_price_above=favorite.alert_price_above,
+                        alert_price_below=favorite.alert_price_below,
+                        last_price_alert_sent=favorite.last_price_alert_sent,
                     )
                     favorites_with_quotes.append(favorite_with_quote)
 
@@ -127,12 +133,18 @@ async def get_favorites(
                     asset_type=fav.asset_type,
                     name=fav.name,
                     created_at=fav.created_at,
+                    # Market condition alerts
                     alert_enabled=fav.alert_enabled,
                     alert_on_overbought=fav.alert_on_overbought,
                     alert_on_oversold=fav.alert_on_oversold,
                     alert_on_neutral=fav.alert_on_neutral,
                     last_alert_state=fav.last_alert_state,
                     last_alert_sent=fav.last_alert_sent,
+                    # Price alerts
+                    price_alert_enabled=fav.price_alert_enabled,
+                    alert_price_above=fav.alert_price_above,
+                    alert_price_below=fav.alert_price_below,
+                    last_price_alert_sent=fav.last_price_alert_sent,
                 )
                 for fav in favorites
             ]
@@ -230,6 +242,7 @@ async def update_notification_preferences(
             )
 
         # Update notification preferences
+        # Market condition alerts
         if preferences.alert_enabled is not None:
             favorite.alert_enabled = preferences.alert_enabled
         if preferences.alert_on_overbought is not None:
@@ -238,6 +251,14 @@ async def update_notification_preferences(
             favorite.alert_on_oversold = preferences.alert_on_oversold
         if preferences.alert_on_neutral is not None:
             favorite.alert_on_neutral = preferences.alert_on_neutral
+
+        # Price alerts
+        if preferences.price_alert_enabled is not None:
+            favorite.price_alert_enabled = preferences.price_alert_enabled
+        if preferences.alert_price_above is not None:
+            favorite.alert_price_above = preferences.alert_price_above
+        if preferences.alert_price_below is not None:
+            favorite.alert_price_below = preferences.alert_price_below
 
         db.commit()
         db.refresh(favorite)

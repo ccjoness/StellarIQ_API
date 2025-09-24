@@ -50,10 +50,15 @@ class FavoritesService:
             symbol=favorite_data.symbol.upper(),
             asset_type=favorite_data.asset_type,
             name=favorite_data.name,
+            # Market condition alerts
             alert_enabled=favorite_data.alert_enabled or False,
             alert_on_overbought=favorite_data.alert_on_overbought or True,
             alert_on_oversold=favorite_data.alert_on_oversold or True,
             alert_on_neutral=favorite_data.alert_on_neutral or False,
+            # Price alerts
+            price_alert_enabled=favorite_data.price_alert_enabled or False,
+            alert_price_above=favorite_data.alert_price_above,
+            alert_price_below=favorite_data.alert_price_below,
         )
 
         self.db.add(db_favorite)
@@ -101,12 +106,18 @@ class FavoritesService:
                 asset_type=favorite.asset_type,
                 name=favorite.name,
                 created_at=favorite.created_at,
+                # Market condition alerts
                 alert_enabled=favorite.alert_enabled,
                 alert_on_overbought=favorite.alert_on_overbought,
                 alert_on_oversold=favorite.alert_on_oversold,
                 alert_on_neutral=favorite.alert_on_neutral,
                 last_alert_state=favorite.last_alert_state,
                 last_alert_sent=favorite.last_alert_sent,
+                # Price alerts
+                price_alert_enabled=favorite.price_alert_enabled,
+                alert_price_above=favorite.alert_price_above,
+                alert_price_below=favorite.alert_price_below,
+                last_price_alert_sent=favorite.last_price_alert_sent,
             )
 
             try:

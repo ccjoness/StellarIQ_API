@@ -80,10 +80,15 @@ class NotificationResponse(BaseModel):
 class NotificationPreferencesUpdate(BaseModel):
     """NotificationPreferencesUpdate schema."""
 
+    # Market condition alerts
     alert_enabled: Optional[bool] = None
     alert_on_overbought: Optional[bool] = None
     alert_on_oversold: Optional[bool] = None
     alert_on_neutral: Optional[bool] = None
+    # Price alerts
+    price_alert_enabled: Optional[bool] = None
+    alert_price_above: Optional[float] = None
+    alert_price_below: Optional[float] = None
 
 
 class MarketAlertData(BaseModel):

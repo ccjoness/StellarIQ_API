@@ -45,6 +45,17 @@ class Settings(BaseSettings):
     # Cache
     cache_ttl_seconds: int = int(os.getenv("CACHE_TTL_SECONDS", "900"))  # 15 minutes
 
+    # Email/SMTP Configuration
+    smtp_host: str = os.getenv("SMTP_HOST", "")
+    smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
+    smtp_username: str = os.getenv("SMTP_USERNAME", "")
+    smtp_password: str = os.getenv("SMTP_PASSWORD", "")
+    smtp_from_email: str = os.getenv("SMTP_FROM_EMAIL", "noreply@stellariq.com")
+    smtp_from_name: str = os.getenv("SMTP_FROM_NAME", "StellarIQ")
+    enable_email_sending: bool = (
+        os.getenv("ENABLE_EMAIL_SENDING", "true").lower() == "true"
+    )
+
     class Config:
         """Pydantic configuration."""
 
