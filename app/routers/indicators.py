@@ -203,27 +203,58 @@ async def get_technical_analysis_summary(
         stoch_condition, _ = TechnicalAnalyzer.analyze_stoch(stoch_parsed)
         bbands_condition, _ = TechnicalAnalyzer.analyze_bbands(bbands_parsed)
 
-        # Calculate overall condition and confidence
+        # Calculate overall condition and confidence with improved algorithm
         conditions = [rsi_condition, macd_condition, stoch_condition, bbands_condition]
         oversold_count = conditions.count(MarketCondition.OVERSOLD)
         overbought_count = conditions.count(MarketCondition.OVERBOUGHT)
+        neutral_count = conditions.count(MarketCondition.NEUTRAL)
+
+        # Calculate confidence based on agreement between indicators
+        total_indicators = len(conditions)
 
         if oversold_count >= 2:
             overall_condition = MarketCondition.OVERSOLD
-            confidence = oversold_count / 4
-            recommendation = (
-                "Consider buying - multiple indicators suggest oversold conditions"
-            )
+            # Confidence increases with more indicators agreeing
+            # Base confidence of 0.5 + 0.125 for each agreeing indicator
+            confidence = 0.5 + (oversold_count * 0.125)
+            confidence = min(confidence, 1.0)  # Cap at 100%
+
+            if oversold_count == 4:
+                recommendation = "Strong buy signal - all indicators suggest oversold conditions"
+            elif oversold_count == 3:
+                recommendation = "Buy signal - majority of indicators suggest oversold conditions"
+            else:
+                recommendation = "Consider buying - multiple indicators suggest oversold conditions"
+
         elif overbought_count >= 2:
             overall_condition = MarketCondition.OVERBOUGHT
-            confidence = overbought_count / 4
-            recommendation = (
-                "Consider selling - multiple indicators suggest overbought conditions"
-            )
+            # Confidence increases with more indicators agreeing
+            confidence = 0.5 + (overbought_count * 0.125)
+            confidence = min(confidence, 1.0)  # Cap at 100%
+
+            if overbought_count == 4:
+                recommendation = "Strong sell signal - all indicators suggest overbought conditions"
+            elif overbought_count == 3:
+                recommendation = "Sell signal - majority of indicators suggest overbought conditions"
+            else:
+                recommendation = "Consider selling - multiple indicators suggest overbought conditions"
+
         else:
             overall_condition = MarketCondition.NEUTRAL
-            confidence = 0.5
-            recommendation = "Hold - mixed signals from technical indicators"
+            # For neutral, calculate confidence based on how mixed the signals are
+            if neutral_count == 4:
+                confidence = 0.8  # High confidence in neutral when all indicators agree
+                recommendation = "Hold - all indicators suggest neutral market conditions"
+            elif neutral_count == 3:
+                confidence = 0.7  # Good confidence when most indicators are neutral
+                recommendation = "Hold - most indicators suggest neutral conditions"
+            elif neutral_count == 2:
+                confidence = 0.6  # Moderate confidence with mixed signals
+                recommendation = "Hold - mixed signals from technical indicators"
+            else:
+                # Very mixed signals (1 of each or similar)
+                confidence = 0.4  # Lower confidence when signals are very mixed
+                recommendation = "Hold with caution - conflicting signals from indicators"
 
         return TechnicalAnalysisSummary(
             symbol=symbol.upper(),
