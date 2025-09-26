@@ -99,6 +99,7 @@ class MarketAlertData(BaseModel):
     confidence_score: float
     current_price: Optional[float] = None
     previous_condition: Optional[str] = None
+    timestamp: Optional[datetime] = None
 
 
 class NotificationSummary(BaseModel):
