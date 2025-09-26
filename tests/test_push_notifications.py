@@ -25,14 +25,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pathlib
 
-# Add the app directory to the Python path
-app_path = pathlib.Path(__file__).parent.parent.resolve() / "app"
-sys.path.append(str(app_path))
+# Add the parent directory to the Python path
+parent_path = pathlib.Path(__file__).parent.parent.resolve()
+sys.path.append(str(parent_path))
 
 from app.core.database import Base
 from app.models.device_token import DeviceToken, DeviceType
 from app.models.notification import Notification, NotificationChannel, NotificationStatus, NotificationType
 from app.models.user import User
+from app.models.favorite import Favorite, AssetType
 from app.schemas.notification import MarketAlertData
 from app.services.notification import NotificationService
 from config import settings
@@ -127,9 +128,65 @@ class PushNotificationTester:
 
             print("-" * 40)
 
+    def find_or_create_favorite(self, user_id: int, symbol: str) -> int:
+        """Find an existing favorite or create a test favorite for the user."""
+        try:
+            # First, try to find an existing favorite for this user and symbol
+            existing_favorite = (
+                self.session.query(Favorite)
+                .filter(Favorite.user_id == user_id, Favorite.symbol == symbol.upper())
+                .first()
+            )
+
+            if existing_favorite:
+                logger.info(f"Found existing favorite: {existing_favorite.symbol} (ID: {existing_favorite.id})")
+                return existing_favorite.id
+
+            # If no existing favorite, try to find any favorite for this user
+            any_favorite = (
+                self.session.query(Favorite)
+                .filter(Favorite.user_id == user_id)
+                .first()
+            )
+
+            if any_favorite:
+                logger.info(f"Using existing favorite: {any_favorite.symbol} (ID: {any_favorite.id})")
+                return any_favorite.id
+
+            # If no favorites exist, create a test favorite
+            logger.info(f"Creating test favorite for {symbol}...")
+            test_favorite = Favorite(
+                user_id=user_id,
+                symbol=symbol.upper(),
+                asset_type=AssetType.STOCK,
+                name=f"{symbol.upper()} Test Favorite",
+                alert_enabled=True,
+                alert_on_overbought=True,
+                alert_on_oversold=True,
+                alert_on_neutral=False
+            )
+
+            self.session.add(test_favorite)
+            self.session.commit()
+            self.session.refresh(test_favorite)
+
+            logger.info(f"Created test favorite: {test_favorite.symbol} (ID: {test_favorite.id})")
+            return test_favorite.id
+
+        except Exception as e:
+            logger.error(f"Error managing favorite: {e}")
+            self.session.rollback()
+            return None
+
     async def send_test_market_alert(self, user_id: int, symbol: str = "AAPL") -> bool:
         """Send a test market alert notification to a specific user."""
         try:
+            # Find or create a valid favorite
+            favorite_id = self.find_or_create_favorite(user_id, symbol)
+            if not favorite_id:
+                logger.error("Could not find or create a valid favorite")
+                return False
+
             # Create test market alert data
             alert_data = MarketAlertData(
                 symbol=symbol,
@@ -139,10 +196,10 @@ class PushNotificationTester:
                 previous_condition="neutral"
             )
 
-            # Send the notification
+            # Send the notification with valid favorite_id
             success = await self.notification_service.send_market_alert(
                 user_id=user_id,
-                favorite_id=1,  # Mock favorite ID
+                favorite_id=favorite_id,
                 alert_data=alert_data,
                 db=self.session
             )
@@ -163,7 +220,7 @@ class PushNotificationTester:
         user_id: int,
         title: str,
         body: str,
-        notification_type: NotificationType = NotificationType.MARKET_ALERT
+        notification_type: NotificationType = NotificationType.SYSTEM
     ) -> bool:
         """Send a custom notification to a specific user."""
         try:

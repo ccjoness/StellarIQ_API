@@ -23,12 +23,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pathlib
 
-# Add the app directory to the Python path
-app_path = pathlib.Path(__file__).parent.parent.resolve() / "app"
-sys.path.append(str(app_path))
+# Add the parent directory to the Python path
+parent_path = pathlib.Path(__file__).parent.parent.resolve()
+sys.path.append(str(parent_path))
 
 from app.models.device_token import DeviceToken
 from app.models.user import User
+from app.models.favorite import Favorite, AssetType
 from app.schemas.notification import MarketAlertData
 from app.services.notification import NotificationService
 from config import settings
@@ -76,6 +77,57 @@ async def list_users():
         session.close()
 
 
+def find_or_create_favorite(session, user_id: int, symbol: str) -> int:
+    """Find an existing favorite or create a test favorite for the user."""
+    try:
+        # First, try to find an existing favorite for this user and symbol
+        existing_favorite = (
+            session.query(Favorite)
+            .filter(Favorite.user_id == user_id, Favorite.symbol == symbol.upper())
+            .first()
+        )
+
+        if existing_favorite:
+            print(f"✓ Found existing favorite: {existing_favorite.symbol} (ID: {existing_favorite.id})")
+            return existing_favorite.id
+
+        # If no existing favorite, try to find any favorite for this user
+        any_favorite = (
+            session.query(Favorite)
+            .filter(Favorite.user_id == user_id)
+            .first()
+        )
+
+        if any_favorite:
+            print(f"✓ Using existing favorite: {any_favorite.symbol} (ID: {any_favorite.id})")
+            return any_favorite.id
+
+        # If no favorites exist, create a test favorite
+        print(f"📝 Creating test favorite for {symbol}...")
+        test_favorite = Favorite(
+            user_id=user_id,
+            symbol=symbol.upper(),
+            asset_type=AssetType.STOCK,
+            name=f"{symbol.upper()} Test Favorite",
+            alert_enabled=True,
+            alert_on_overbought=True,
+            alert_on_oversold=True,
+            alert_on_neutral=False
+        )
+
+        session.add(test_favorite)
+        session.commit()
+        session.refresh(test_favorite)
+
+        print(f"✅ Created test favorite: {test_favorite.symbol} (ID: {test_favorite.id})")
+        return test_favorite.id
+
+    except Exception as e:
+        print(f"❌ Error managing favorite: {e}")
+        session.rollback()
+        return None
+
+
 async def send_market_alert(user_id: int, symbol: str):
     """Send a test market alert to a specific user."""
     session = SessionLocal()
@@ -88,6 +140,12 @@ async def send_market_alert(user_id: int, symbol: str):
 
         print(f"Sending market alert for {symbol} to user {user.username} (ID: {user_id})")
 
+        # Find or create a valid favorite
+        favorite_id = find_or_create_favorite(session, user_id, symbol)
+        if not favorite_id:
+            print("❌ Could not find or create a valid favorite")
+            return False
+
         # Create test market alert data
         alert_data = MarketAlertData(
             symbol=symbol,
@@ -97,11 +155,11 @@ async def send_market_alert(user_id: int, symbol: str):
             previous_condition="neutral"
         )
 
-        # Send the notification (use None for favorite_id to avoid FK constraint)
+        # Send the notification with valid favorite_id
         notification_service = NotificationService()
         success = await notification_service.send_market_alert(
             user_id=user_id,
-            favorite_id=None,  # No favorite ID to avoid FK constraint
+            favorite_id=favorite_id,
             alert_data=alert_data,
             db=session
         )

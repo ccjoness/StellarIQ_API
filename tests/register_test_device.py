@@ -14,9 +14,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pathlib
 
-# Add the app directory to the Python path
-app_path = pathlib.Path(__file__).parent.parent.resolve() / "app"
-sys.path.append(str(app_path))
+# Add the parent directory to the Python path
+parent_path = pathlib.Path(__file__).parent.parent.resolve()
+sys.path.append(str(parent_path))
 
 from app.models.device_token import DeviceToken, DeviceType
 from app.models.user import User
