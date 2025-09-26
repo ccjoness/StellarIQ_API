@@ -21,9 +21,11 @@ from datetime import datetime
 import httpx
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import pathlib
 
 # Add the app directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), "app"))
+app_path = pathlib.Path(__file__).parent.parent.resolve() / "app"
+sys.path.append(str(app_path))
 
 from app.models.device_token import DeviceToken
 from app.models.user import User
@@ -95,11 +97,11 @@ async def send_market_alert(user_id: int, symbol: str):
             previous_condition="neutral"
         )
 
-        # Send the notification
+        # Send the notification (use None for favorite_id to avoid FK constraint)
         notification_service = NotificationService()
         success = await notification_service.send_market_alert(
             user_id=user_id,
-            favorite_id=1,  # Mock favorite ID
+            favorite_id=None,  # No favorite ID to avoid FK constraint
             alert_data=alert_data,
             db=session
         )
@@ -248,9 +250,18 @@ async def test_expo_connection():
 
             print(f"Expo API Status: {response.status_code}")
             if response.status_code == 200:
-                print("✓ Expo API is accessible")
+                print("✓ Expo API is accessible and responding correctly")
                 result = response.json()
-                print(f"Response: {json.dumps(result, indent=2)}")
+
+                # Check if we got the expected "DeviceNotRegistered" error for our test token
+                if (result.get("data") and
+                    len(result["data"]) > 0 and
+                    result["data"][0].get("details", {}).get("error") == "DeviceNotRegistered"):
+                    print("✓ API correctly identified test token as invalid (this is expected)")
+                    print("✓ Connection test SUCCESSFUL - ready to send real notifications!")
+                else:
+                    print("Response details:")
+                    print(f"{json.dumps(result, indent=2)}")
             else:
                 print(f"✗ Expo API error: {response.text}")
 
