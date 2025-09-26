@@ -49,29 +49,29 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class PushNotificationTester:
     """Test class for push notifications."""
-    
+
     def __init__(self):
         self.notification_service = NotificationService()
         self.session = SessionLocal()
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
-    
+
     def list_users_with_tokens(self) -> List[dict]:
         """List all users with their device tokens."""
         users = self.session.query(User).all()
         user_data = []
-        
+
         for user in users:
             device_tokens = (
                 self.session.query(DeviceToken)
                 .filter(DeviceToken.user_id == user.id, DeviceToken.is_active == True)
                 .all()
             )
-            
+
             user_info = {
                 "id": user.id,
                 "username": user.username,
@@ -90,27 +90,27 @@ class PushNotificationTester:
                 ]
             }
             user_data.append(user_info)
-        
+
         return user_data
-    
+
     def display_users(self):
         """Display all users with their device tokens in a formatted way."""
         users = self.list_users_with_tokens()
-        
+
         if not users:
             print("No users found in the database.")
             return
-        
+
         print("\n" + "="*80)
         print("USERS WITH DEVICE TOKENS")
         print("="*80)
-        
+
         for user in users:
             print(f"\nUser ID: {user['id']}")
             print(f"Username: {user['username']}")
             print(f"Email: {user['email']}")
             print(f"Push Notifications: {'Enabled' if user['push_notifications_enabled'] else 'Disabled'}")
-            
+
             if user['device_tokens']:
                 print(f"Device Tokens ({len(user['device_tokens'])}):")
                 for i, token in enumerate(user['device_tokens'], 1):
@@ -122,9 +122,9 @@ class PushNotificationTester:
                         print(f"     Last Used: {token['last_used']}")
             else:
                 print("No active device tokens")
-            
+
             print("-" * 40)
-    
+
     async def send_test_market_alert(self, user_id: int, symbol: str = "AAPL") -> bool:
         """Send a test market alert notification to a specific user."""
         try:
@@ -136,7 +136,7 @@ class PushNotificationTester:
                 current_price=150.25,
                 previous_condition="neutral"
             )
-            
+
             # Send the notification
             success = await self.notification_service.send_market_alert(
                 user_id=user_id,
@@ -144,22 +144,22 @@ class PushNotificationTester:
                 alert_data=alert_data,
                 db=self.session
             )
-            
+
             if success:
                 logger.info(f"Test market alert sent successfully to user {user_id}")
             else:
                 logger.error(f"Failed to send test market alert to user {user_id}")
-            
+
             return success
-            
+
         except Exception as e:
             logger.error(f"Error sending test market alert: {e}")
             return False
-    
+
     async def send_custom_notification(
-        self, 
-        user_id: int, 
-        title: str, 
+        self,
+        user_id: int,
+        title: str,
         body: str,
         notification_type: NotificationType = NotificationType.MARKET_ALERT
     ) -> bool:
@@ -171,11 +171,11 @@ class PushNotificationTester:
                 .filter(DeviceToken.user_id == user_id, DeviceToken.is_active == True)
                 .all()
             )
-            
+
             if not device_tokens:
                 logger.warning(f"No active device tokens found for user {user_id}")
                 return False
-            
+
             # Create notification record
             notification = Notification(
                 user_id=user_id,
@@ -187,7 +187,7 @@ class PushNotificationTester:
             )
             self.session.add(notification)
             self.session.commit()
-            
+
             # Prepare messages for Expo
             messages = []
             for token in device_tokens:
@@ -202,30 +202,30 @@ class PushNotificationTester:
                     "sound": "default",
                     "priority": "high",
                 })
-            
+
             # Send to Expo Push API
             success = await self._send_expo_notifications(messages)
-            
+
             # Update notification status
             notification.status = (
                 NotificationStatus.SENT if success else NotificationStatus.FAILED
             )
             if success:
                 notification.sent_at = datetime.now()
-            
+
             self.session.commit()
-            
+
             if success:
                 logger.info(f"Custom notification sent successfully to user {user_id}")
             else:
                 logger.error(f"Failed to send custom notification to user {user_id}")
-            
+
             return success
-            
+
         except Exception as e:
             logger.error(f"Error sending custom notification: {e}")
             return False
-    
+
     async def _send_expo_notifications(self, messages: List[dict]) -> bool:
         """Send notifications via Expo Push API."""
         try:
@@ -234,23 +234,23 @@ class PushNotificationTester:
                 "Accept-Encoding": "gzip, deflate",
                 "Content-Type": "application/json",
             }
-            
+
             # Add authorization header if access token is available
             expo_access_token = os.getenv("EXPO_ACCESS_TOKEN")
             if expo_access_token:
                 headers["Authorization"] = f"Bearer {expo_access_token}"
-            
+
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     "https://exp.host/--/api/v2/push/send",
                     json=messages,
                     headers=headers,
                 )
-                
+
                 if response.status_code == 200:
                     result = response.json()
                     logger.info(f"Expo API Response: {json.dumps(result, indent=2)}")
-                    
+
                     # Check for any errors in the response
                     for data in result.get("data", []):
                         if data.get("status") == "error":
@@ -260,20 +260,20 @@ class PushNotificationTester:
                 else:
                     logger.error(f"Expo push API error: {response.status_code} - {response.text}")
                     return False
-                    
+
         except Exception as e:
             logger.error(f"Failed to send Expo push notifications: {e}")
             return False
-    
+
     def get_notification_history(self, user_id: Optional[int] = None, limit: int = 10) -> List[dict]:
         """Get recent notification history."""
         query = self.session.query(Notification)
-        
+
         if user_id:
             query = query.filter(Notification.user_id == user_id)
-        
+
         notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
-        
+
         return [
             {
                 "id": notif.id,
@@ -313,28 +313,28 @@ async def test_expo_connection():
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
-        
+
         expo_access_token = os.getenv("EXPO_ACCESS_TOKEN")
         if expo_access_token:
             headers["Authorization"] = f"Bearer {expo_access_token}"
             print("✓ Expo access token found")
         else:
             print("⚠ No Expo access token found (EXPO_ACCESS_TOKEN env var)")
-        
+
         # Test with a dummy message to check API connectivity
         test_message = [{
             "to": "ExponentPushToken[test]",
             "title": "Test",
             "body": "Connection test"
         }]
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://exp.host/--/api/v2/push/send",
                 json=test_message,
                 headers=headers,
             )
-            
+
             print(f"Expo API Status: {response.status_code}")
             if response.status_code == 200:
                 print("✓ Expo API is accessible")
@@ -342,7 +342,7 @@ async def test_expo_connection():
                 print(f"Response: {json.dumps(result, indent=2)}")
             else:
                 print(f"✗ Expo API error: {response.text}")
-                
+
     except Exception as e:
         print(f"✗ Failed to connect to Expo API: {e}")
 
@@ -350,29 +350,29 @@ async def test_expo_connection():
 async def main():
     """Main function to run the notification tester."""
     print("Initializing StellarIQ Push Notification Tester...")
-    
+
     # Check environment variables
     required_env_vars = ["DATABASE_URL"]
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
-    
+
     if missing_vars:
         print(f"Missing required environment variables: {', '.join(missing_vars)}")
         print("Please set these variables and try again.")
         return
-    
+
     try:
         with PushNotificationTester() as tester:
             while True:
                 print_menu()
                 choice = input("Enter your choice (1-6): ").strip()
-                
+
                 if choice == "1":
                     tester.display_users()
-                
+
                 elif choice == "2":
                     user_id = input("Enter user ID: ").strip()
                     symbol = input("Enter symbol (default: AAPL): ").strip() or "AAPL"
-                    
+
                     try:
                         user_id = int(user_id)
                         print(f"Sending test market alert for {symbol} to user {user_id}...")
@@ -383,12 +383,12 @@ async def main():
                             print("✗ Failed to send test market alert")
                     except ValueError:
                         print("Invalid user ID. Please enter a number.")
-                
+
                 elif choice == "3":
                     user_id = input("Enter user ID: ").strip()
                     title = input("Enter notification title: ").strip()
                     body = input("Enter notification body: ").strip()
-                    
+
                     try:
                         user_id = int(user_id)
                         if title and body:
@@ -402,27 +402,27 @@ async def main():
                             print("Title and body are required.")
                     except ValueError:
                         print("Invalid user ID. Please enter a number.")
-                
+
                 elif choice == "4":
                     user_id_input = input("Enter user ID (or press Enter for all users): ").strip()
                     limit_input = input("Enter limit (default: 10): ").strip()
-                    
+
                     user_id = None
                     if user_id_input:
                         try:
                             user_id = int(user_id_input)
                         except ValueError:
                             print("Invalid user ID. Showing all users.")
-                    
+
                     limit = 10
                     if limit_input:
                         try:
                             limit = int(limit_input)
                         except ValueError:
                             print("Invalid limit. Using default (10).")
-                    
+
                     history = tester.get_notification_history(user_id, limit)
-                    
+
                     if history:
                         print(f"\nRecent Notifications ({len(history)}):")
                         print("-" * 80)
@@ -437,20 +437,20 @@ async def main():
                             print("-" * 40)
                     else:
                         print("No notifications found.")
-                
+
                 elif choice == "5":
                     print("Testing Expo API connection...")
                     await test_expo_connection()
-                
+
                 elif choice == "6":
                     print("Goodbye!")
                     break
-                
+
                 else:
                     print("Invalid choice. Please try again.")
-                
+
                 input("\nPress Enter to continue...")
-    
+
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception as e:
