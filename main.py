@@ -4,8 +4,10 @@ import logging
 import os
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from pydantic import EmailStr
 
 from app.routers import (
     analysis,
@@ -18,8 +20,10 @@ from app.routers import (
     stocks,
     )
 from app.services.scheduler import scheduler
+from app.core.database import get_db
+from app.schemas.account_deletion import AccountDeletionRequest as AccountDeletionRequestSchema
+from app.services.account_deletion import AccountDeletionService
 from config import settings
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -92,6 +96,122 @@ async def privacy_policy(request: Request):
     """Render the privacy policy page."""
     policy_effective_date = "2025-09-26"
     return templates.TemplateResponse("privacy-policy.html", {"request": request, "policy_effective_date": policy_effective_date})
+
+
+@app.get("/account-deletion", response_class=HTMLResponse)
+async def account_deletion_form(request: Request, email: str = None):
+    """Display account deletion request form."""
+    return templates.TemplateResponse(
+        "account-deletion.html",
+        {
+            "request": request,
+            "email": email,
+            "success": False,
+            "error": None,
+            }
+        )
+
+
+@app.post("/account-deletion", response_class=HTMLResponse)
+async def submit_account_deletion(
+        request: Request,
+        email: EmailStr = Form(...),
+        reason: str = Form(None),
+        additional_info: str = Form(None),
+        confirm_deletion: bool = Form(...),
+        db: Session = Depends(get_db),
+        ):
+    """Submit account deletion request."""
+    try:
+        # Validate the confirmation checkbox
+        if not confirm_deletion:
+            raise ValueError("You must confirm that you want to delete your account")
+
+        # Create the deletion request with proper email validation
+        logger.info(f"Account deletion requested for email: {email}")
+        request_data = AccountDeletionRequestSchema(
+            email=email,
+            reason=reason if reason else None,
+            additional_info=additional_info if additional_info else None,
+            confirm_deletion=confirm_deletion,
+            )
+
+        deletion_service = AccountDeletionService()
+        # Get the base URL from the request
+        base_url = f"{request.url.scheme}://{request.url.netloc}"
+        response = deletion_service.create_deletion_request(db, request_data, base_url)
+
+        return templates.TemplateResponse(
+            "account-deletion.html",
+            {
+                "request": request,
+                "email": email,
+                "success": True,
+                "error": None,
+                }
+            )
+
+    except ValueError as e:
+        return templates.TemplateResponse(
+            "account-deletion.html",
+            {
+                "request": request,
+                "email": email,
+                "success": False,
+                "error": str(e),
+                }
+            )
+    except Exception as e:
+        # Log the actual error for debugging
+        logger.error(f"Account deletion error: {e}", exc_info=True)
+
+        return templates.TemplateResponse(
+            "account-deletion.html",
+            {
+                "request": request,
+                "email": email,
+                "success": False,
+                "error": f"An unexpected error occurred: {str(e)}",
+                }
+            )
+
+
+@app.get("/account-deletion/confirm", response_class=HTMLResponse)
+async def confirm_account_deletion(request: Request, token: str, db: Session = Depends(get_db)):
+    """Confirm account deletion via email token."""
+    try:
+        deletion_service = AccountDeletionService()
+        success = deletion_service.confirm_deletion_request(db, token)
+
+        if success:
+            return templates.TemplateResponse(
+                "account-deletion-confirmed.html",
+                {
+                    "request": request,
+                    "success": True,
+                    "message": "Your account has been successfully deleted.",
+                    }
+                )
+        else:
+            return templates.TemplateResponse(
+                "account-deletion-confirmed.html",
+                {
+                    "request": request,
+                    "success": False,
+                    "message": "Invalid or expired confirmation link. Please try submitting a new deletion request.",
+                    }
+                )
+
+    except Exception as e:
+        logger.error(f"Error confirming account deletion: {e}")
+        return templates.TemplateResponse(
+            "account-deletion-confirmed.html",
+            {
+                "request": request,
+                "success": False,
+                "message": "An error occurred while processing your request. Please contact support.",
+                }
+            )
 
 
 @app.get("/health")

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width'>
+    <title>StellarIQ - Account Deletion {{ 'Confirmed' if success else 'Failed' }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        .bg-dark {
+            background-color: #0f172a !important;
+        }
+
+        .container {
+            background-color: #0f172a;
+        }
+
+        a:link, a:visited, a:active, a:hover {
+            color: #94a3b8;
+        }
+
+        .card {
+            border: 1px solid #334155;
+            border-radius: 12px !important;
+            background-color: #1e293b !important;
+            color: #f1f5f9;
+        }
+
+        .btn-primary {
+            background-color: #6366f1;
+            border-color: #6366f1;
+        }
+
+        .btn-primary:hover {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .alert-success {
+            background-color: #86efac;
+            border-color: #4ade80;
+            color: #166534;
+        }
+
+        .alert-danger {
+            background-color: #fca5a5;
+            border-color: #f87171;
+            color: #991b1b;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #22c55e;
+            margin-bottom: 1rem;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: #ef4444;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="bg-dark min-vh-100">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body text-center">
+                        {% if success %}
+                        <div class="success-icon">✅</div>
+                        <h1 class="mb-4">Account Deletion Confirmed</h1>
+                        
+                        <div class="alert alert-success" role="alert">
+                            <h4 class="alert-heading">Account Successfully Deleted</h4>
+                            <p>{{ message }}</p>
+                        </div>
+
+                        <div class="mt-4">
+                            <h5>What Happened:</h5>
+                            <ul class="text-start">
+                                <li>Your user account has been permanently deleted</li>
+                                <li>All your favorites and watchlists have been removed</li>
+                                <li>All notification preferences have been cleared</li>
+                                <li>All associated data has been permanently deleted</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4">
+                            <p><strong>Thank you for using StellarIQ.</strong></p>
+                            <p>We're sorry to see you go. If you have any feedback about your experience, please feel free to contact us.</p>
+                        </div>
+
+                        {% else %}
+                        <div class="error-icon">❌</div>
+                        <h1 class="mb-4">Account Deletion Failed</h1>
+                        
+                        <div class="alert alert-danger" role="alert">
+                            <h4 class="alert-heading">Unable to Process Request</h4>
+                            <p>{{ message }}</p>
+                        </div>
+
+                        <div class="mt-4">
+                            <h5>What You Can Do:</h5>
+                            <ul class="text-start">
+                                <li>Check if the confirmation link has expired (links are valid for 24 hours)</li>
+                                <li>Submit a new account deletion request if needed</li>
+                                <li>Contact support if you continue to experience issues</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="/account-deletion" class="btn btn-primary me-2">Submit New Request</a>
+                        </div>
+                        {% endif %}
+
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <h5>Need Help?</h5>
+                            <p class="text-muted">
+                                If you have questions about account deletion or data privacy, 
+                                please contact us at <a href="mailto:chris@stellariq.app">chris@stellariq.app</a>
+                            </p>
+                            <p class="text-muted">
+                                <a href="/privacy-policy">View our Privacy Policy</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

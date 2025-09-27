@@ -227,6 +227,94 @@ The StellarIQ Team
             logger.error(f"Failed to send price alert email to {to_email}: {e}")
             return False
 
+    def send_account_deletion_confirmation(
+        self,
+        to_email: str,
+        confirmation_url: str,
+        request_id: str,
+    ) -> bool:
+        """Send account deletion confirmation email"""
+        try:
+            subject = "StellarIQ - Confirm Account Deletion Request"
+
+            body = f"""Hello,
+
+We received a request to permanently delete your StellarIQ account associated with this email address.
+
+⚠️ IMPORTANT: This action is permanent and cannot be undone. All your data including favorites, portfolios, and preferences will be permanently deleted.
+
+If you requested this deletion:
+Click this link to confirm and proceed with the account deletion:
+{confirmation_url}
+
+If you did not request this:
+Please ignore this email. Your account will remain active and no changes will be made.
+
+Request Details:
+- Email: {to_email}
+- Request ID: {request_id}
+- This link expires in 24 hours
+
+If you have any questions, please contact us at chris@stellariq.app
+
+Best regards,
+The StellarIQ Team
+"""
+
+            # Log the email content
+            logger.info(f"Account deletion confirmation email for {to_email}:")
+            logger.info(f"Subject: {subject}")
+            logger.info(f"Confirmation URL: {confirmation_url}")
+
+            # Send actual email if SMTP is configured and enabled
+            if self.enable_email_sending:
+                return self._send_smtp_email(to_email, subject, body)
+            else:
+                logger.info("Email sending disabled - email content logged only")
+                return True
+
+        except Exception as e:
+            logger.error(f"Failed to send account deletion confirmation email to {to_email}: {e}")
+            return False
+
+    def send_account_deletion_completed(self, to_email: str) -> bool:
+        """Send account deletion completion notification"""
+        try:
+            subject = "StellarIQ - Account Deletion Completed"
+
+            body = f"""Hello,
+
+Your StellarIQ account associated with {to_email} has been permanently deleted as requested.
+
+What was deleted:
+- Your user account and profile
+- All favorites and watchlists
+- All notification preferences
+- All associated data
+
+Thank you for using StellarIQ. We're sorry to see you go!
+
+If you have any questions about this deletion, please contact us at chris@stellariq.app
+
+Best regards,
+The StellarIQ Team
+"""
+
+            # Log the email content
+            logger.info(f"Account deletion completed email for {to_email}:")
+            logger.info(f"Subject: {subject}")
+
+            # Send actual email if SMTP is configured and enabled
+            if self.enable_email_sending:
+                return self._send_smtp_email(to_email, subject, body)
+            else:
+                logger.info("Email sending disabled - email content logged only")
+                return True
+
+        except Exception as e:
+            logger.error(f"Failed to send account deletion completed email to {to_email}: {e}")
+            return False
+
 
 # Global email service instance
 email_service = EmailService()

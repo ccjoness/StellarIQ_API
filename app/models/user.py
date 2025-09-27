@@ -50,3 +50,6 @@ class User(Base):
     notifications = relationship(
         "Notification", back_populates="user", cascade="all, delete-orphan"
     )
+    deletion_requests = relationship(
+        "AccountDeletionRequest", back_populates="user", cascade="all, delete-orphan"
+    )

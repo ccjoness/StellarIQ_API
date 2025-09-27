@@ -2,12 +2,18 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_active_user
 from app.core.database import get_db
 from app.models.user import User
+from app.schemas.account_deletion import (
+    AccountDeletionRequest as AccountDeletionRequestSchema,
+    AccountDeletionResponse,
+)
 from app.schemas.user import (
     ChangePasswordRequest,
     ChangePasswordResponse,
@@ -22,11 +28,13 @@ from app.schemas.user import (
     UserProfileUpdate,
     UserResponse,
 )
+from app.services.account_deletion import AccountDeletionService
 from app.services.auth import AuthService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+templates = Jinja2Templates(directory="app/templates")
 
 
 @router.post(
@@ -165,3 +173,77 @@ async def update_user_profile(
     )
 
     return updated_user
+
+
+@router.get("/account-deletion", response_class=HTMLResponse)
+async def account_deletion_form(request: Request, email: str = None):
+    """Display account deletion request form."""
+    return templates.TemplateResponse(
+        "account-deletion.html",
+        {
+            "request": request,
+            "email": email,
+            "success": False,
+            "error": None,
+        }
+    )
+
+
+@router.post("/account-deletion", response_class=HTMLResponse)
+async def submit_account_deletion(
+    request: Request,
+    email: str = Form(...),
+    reason: str = Form(None),
+    additional_info: str = Form(None),
+    confirm_deletion: bool = Form(...),
+    db: Session = Depends(get_db),
+):
+    """Submit account deletion request."""
+    try:
+        # Validate the confirmation checkbox
+        if not confirm_deletion:
+            raise ValueError("You must confirm that you want to delete your account")
+
+        # Create the deletion request
+        request_data = AccountDeletionRequestSchema(
+            email=email,
+            reason=reason if reason else None,
+            additional_info=additional_info if additional_info else None,
+            confirm_deletion=confirm_deletion,
+        )
+
+        deletion_service = AccountDeletionService()
+        response = deletion_service.create_deletion_request(db, request_data)
+
+        return templates.TemplateResponse(
+            "account-deletion.html",
+            {
+                "request": request,
+                "email": email,
+                "success": True,
+                "error": None,
+            }
+        )
+
+    except ValueError as e:
+        logger.warning(f"Account deletion request failed: {e}")
+        return templates.TemplateResponse(
+            "account-deletion.html",
+            {
+                "request": request,
+                "email": email,
+                "success": False,
+                "error": str(e),
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error in account deletion: {e}")
+        return templates.TemplateResponse(
+            "account-deletion.html",
+            {
+                "request": request,
+                "email": email,
+                "success": False,
+                "error": "An unexpected error occurred. Please try again later.",
+            }
+        )
